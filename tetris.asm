@@ -137,7 +137,7 @@ keyboard_input:                     # A key is pressed
     lw $a0, 4($t0)                  # Load second word from keyboard
     beq $a0, 0x71, Terminate        # Check if the key q was pressed
     beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
-    #beq $a0, 0x1E, respond_to_A     # Check if the key a was pressed
+    beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
     #beq $a0, 0x1F, respond_to_S
     #beq $a0, 0x20, respond_to_D
 
@@ -180,7 +180,40 @@ respond_to_W:
     move $a0, $t3
     jal fill_color
     b keyboard
+
+respond_to_A:
+    li $t9, 0x8A8F9A       # wall
     
+    lw $a1, 12($sp)
+    addi $s1, $a1, 4
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard
+   
+    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 4    # move left
+    
+    lw $s4, 4($sp)      # move left
+    addi $s4, $s4, 4     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 4    # move left
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 4    # move left
+    
+    
+    jal delete_shape
+    
+    subi $sp, $sp, 16   # Allocate 20 bytes on the stack
+    sw $s0, 0($sp)      # Store value 'a' at 0($sp)
+    sw $s4, 4($sp)      # Store value 'b' at 4($sp)
+    sw $s2, 8($sp)      # Store value 'c' at 8($sp)
+    sw $s3, 12($sp)     # Store value 'd' at 12($sp)
+    move $a0, $t3
+    jal fill_color
+    b keyboard    
                               
 
 #####################################     
