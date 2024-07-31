@@ -73,43 +73,138 @@ main:
 
 ##########################################################
 init_shape: 
-    li $t1, 6  
-    beq $t1, 0, U_shape
-    beq $t1, 1, I_shape
-    beq $t1, 2, S_shape
-    beq $t1, 3, Z_shape
-    beq $t1, 4, L_shape
-    beq $t1, 5, J_shape
-    jal T_shape_Fill
-    b keyboard
-    j Terminate 
+   #li $t1, 6  
+   beq $t1, 0, U_shape
+   beq $t1, 1, I_shape
+   beq $t1, 2, S_shape
+   beq $t1, 3, Z_shape
+   beq $t1, 4, L_shape
+   beq $t1, 5, J_shape
+   
+   li $a0, 0x8D6E99
+   subi $sp, $sp, 16
+   
+   addi $t9, $t6, 0
+   sw $t9, 0($sp)
+   
+   addi $t9, $t6, 4
+   sw $t9, 4($sp)
+   
+   addi $t9, $t6, 132
+   sw $t9, 8($sp)
+   
+   addi $t9, $t6, 8
+   sw $t9, 12($sp)
+   j init_shape_done
    
     
 U_shape:
-    jal U_shape_Fill
-    j keyboard 
+    li $a0, 0xD9A867
+    subi $sp, $sp, 16
+   
+    addi $t9, $t6, 0
+    sw $t9, 0($sp)
+   
+    addi $t9, $t6, 128
+    sw $t9, 4($sp)
+   
+    addi $t9, $t6, 4
+    sw $t9, 8($sp)
+   
+    addi $t9, $t6, 132
+    sw $t9, 12($sp)
+    j init_shape_done 
        
 I_shape:
-    jal I_shape_Fill
-    j keyboard
+    li $a0, 0x003D6B
+    subi $sp, $sp, 16
+   
+    addi $t9, $t6, 0
+    sw $t9, 0($sp)
+   
+    addi $t9, $t6, 128
+    sw $t9, 4($sp)
+   
+    addi $t9, $t6, 256
+    sw $t9, 8($sp)
+   
+    addi $t9, $t6, 384
+    sw $t9, 12($sp)
+    j init_shape_done
     
 S_shape:
-    jal S_shape_Fill
-    j keyboard
+    li $a0, 0xB26666
+    subi $sp, $sp, 16
+   
+    addi $t9, $t6, 128
+    sw $t9, 0($sp)
+   
+    addi $t9, $t6, 4
+    sw $t9, 4($sp)
+   
+    addi $t9, $t6, 8
+    sw $t9, 8($sp)
+   
+   addi $t9, $t6, 132
+   sw $t9, 12($sp)
+   j init_shape_done
    
     
 Z_shape:
-    jal Z_shape_Fill
-    j keyboard
+   li $a0, 0x7C8A73
+   
+   subi $sp, $sp, 16
+   
+   addi $t9, $t6, 0
+   sw $t9, 0($sp)
+   
+   addi $t9, $t6, 4
+   sw $t9, 4($sp)
+   
+   addi $t9, $t6, 132
+   sw $t9, 8($sp)
+   
+   addi $t9, $t6, 136
+   sw $t9, 12($sp)
+   j init_shape_done
       
        
 L_shape:
-    jal L_shape_Fill
-    j keyboard
+   li $a0, 0xC97A53
+   subi $sp, $sp, 16
+   
+   addi $t9, $t6, 0
+   sw $t9, 0($sp)
+   
+   addi $t9, $t6, 128
+   sw $t9, 4($sp)
+   
+   addi $t9, $t6, 256
+   sw $t9, 8($sp)
+   
+   addi $t9, $t6, 260
+   sw $t9, 12($sp)
+   j init_shape_done
    
 J_shape:
-    jal J_shape_Fill
+   li $a0, 0xE26B8A
+   subi $sp, $sp, 16
+   
+   addi $t9, $t6, 256
+   sw $t9, 0($sp)
+   
+   addi $t9, $t6, 4
+   sw $t9, 4($sp)
+   
+   addi $t9, $t6, 132
+   sw $t9, 8($sp)
+   
+   addi $t9, $t6, 260
+   sw $t9, 12($sp)
 
+init_shape_done:
+   jal fill_color
+   j keyboard
     
 ###############################################################################
 keyboard:
@@ -502,7 +597,6 @@ exit_fill_color:
   
 ############################################################################## 
 
-
 delete_shape:
     li $t5, 0xE4DCD1       # gret color
     li $t7, 0xC5CCD6       # white color
@@ -578,171 +672,7 @@ random_shape:
      
 #####################################   
 
- # to store stack, we first store the leftest then right testest     
-##################################                  
-I_shape_Fill:
-   li $t5, 0x003D6B
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 128
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 256
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 384
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   jr $ra
-   
-#####################################         
-U_shape_Fill:
-   li $t5, 0xD9A867
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 128
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 4
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 132
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   jr $ra
-   
-#####################################   
-S_shape_Fill:
-   li $t5, 0xB26666
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 128
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 8
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 132
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   jr $ra
-   
-#####################################
-Z_shape_Fill:
-   li $t5, 0x7C8A73
-   
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   
-   addi $t9, $t6, 136
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-  
-   jr $ra
-   
-#####################################  
-L_shape_Fill:
-   li $t5, 0xC97A53
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 128
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 256
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 260
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   jr $ra
-   
-#####################################  
-J_shape_Fill:
-   li $t5, 0xE26B8A
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 256
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 260
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   
-   jr $ra
-   
-#####################################
-T_shape_Fill:
-   li $t5, 0x8D6E99
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t5, 0($t9)
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t5, 0($t9)
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t5, 0($t9)
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 8
-   sw $t5, 0($t9)
-   sw $t9, 12($sp)
-   
-   jr $ra
-   
+
 #####################################
 
  ##################################################################################             
