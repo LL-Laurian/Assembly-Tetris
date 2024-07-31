@@ -147,12 +147,15 @@ keyboard_input:                     # A key is pressed
     b keyboard
 
 respond_to_W:
-   move $t7, $t6
-   subi $t6, $t6, 4     #move one grid to left
-   subi $t5, $t3, 1
-   ble $t5, 2, keyboard
+    li $t9, 0x8A8F9A       # wall
+    
+    lw $a1, 0($sp)
+    subi $s1, $a1, 4
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard
    
-   move $t3, $t5
+    
+   
    jal delete_shape                           
 
 ##############################################################################                                                                        
@@ -169,7 +172,7 @@ delete_shape:
     li $t9, 0x8A8F9A       # wall
     li $t2, 4
     
-    lw $a0, 16($sp)
+    lw $a0, 12($sp)
     
     lw $a1, 0($sp)
     subi $s1, $a1, 4
@@ -258,7 +261,7 @@ I_shape_Fill:
    
    addi $t9, $t6, 384
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    jr $ra
    
@@ -304,7 +307,7 @@ S_shape_Fill:
    
    addi $t9, $t6, 132
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    jr $ra
    
@@ -329,7 +332,7 @@ Z_shape_Fill:
    
    addi $t9, $t6, 136
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
   
    jr $ra
    
@@ -352,7 +355,7 @@ L_shape_Fill:
    
    addi $t9, $t6, 260
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    jr $ra
    
@@ -375,7 +378,7 @@ J_shape_Fill:
    
    addi $t9, $t6, 260
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    
    jr $ra
@@ -399,7 +402,7 @@ T_shape_Fill:
    
    addi $t9, $t6, 8
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    jr $ra
    
