@@ -72,7 +72,8 @@ main:
 ##############################################################################  
 
 ##########################################################
-init_shape:   
+init_shape: 
+    li $t1, 6  
     beq $t1, 0, U_shape
     beq $t1, 1, I_shape
     beq $t1, 2, S_shape
@@ -87,37 +88,25 @@ init_shape:
 U_shape:
     jal U_shape_Fill
     j keyboard 
-    
-    
+       
 I_shape:
     jal I_shape_Fill
     j keyboard
-
     
-     
-       
 S_shape:
     jal S_shape_Fill
     j keyboard
- 
-    
-    
+   
     
 Z_shape:
     jal Z_shape_Fill
     j keyboard
- 
-    
-     
+      
        
 L_shape:
     jal L_shape_Fill
     j keyboard
-
-    
-    
-    
-    
+   
 J_shape:
     jal J_shape_Fill
 
@@ -138,7 +127,7 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x71, Terminate        # Check if the key q was pressed
     beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
     beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
-    #beq $a0, 0x1F, respond_to_S
+    beq $a0, 0x73, respond_to_S
     #beq $a0, 0x20, respond_to_D
 
     li $v0, 1                       # ask system to print $a0
@@ -152,7 +141,7 @@ respond_to_W:
     lw $a1, 0($sp)
     subi $s1, $a1, 4
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard
+    beq $t4, $t9, keyboard    # check left most touches the wall
    
     
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -167,19 +156,8 @@ respond_to_W:
     
     lw $s3, 12($sp)     # Store address at 12($sp)
     subi $s3, $s3, 4    # move left
-    
-    
-    
-    jal delete_shape
-    
-    subi $sp, $sp, 16   # Allocate 20 bytes on the stack
-    sw $s0, 0($sp)      # Store value 'a' at 0($sp)
-    sw $s4, 4($sp)      # Store value 'b' at 4($sp)
-    sw $s2, 8($sp)      # Store value 'c' at 8($sp)
-    sw $s3, 12($sp)     # Store value 'd' at 12($sp)
-    move $a0, $t3
-    jal fill_color
-    b keyboard
+   
+    j keyboard_update
 
 respond_to_A:
     li $t9, 0x8A8F9A       # wall
@@ -187,7 +165,7 @@ respond_to_A:
     lw $a1, 12($sp)
     addi $s1, $a1, 4
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard
+    beq $t4, $t9, keyboard    # check right most touches the wall
    
     
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -203,19 +181,299 @@ respond_to_A:
     lw $s3, 12($sp)     # Store address at 12($sp)
     addi $s3, $s3, 4    # move left
     
+    j keyboard_update
     
+respond_to_S:
+    li $t3, 0xD9A867 #U-shape
+    lw $a1, 0($sp)
+    lw $t4, 0($a1)
+    beq $t4, $t3, keyboard
+
+    li $t3, 0x003D6B  #I-shape
+    beq $t4, $t3, I_shape_rot
+
+    li $t3, 0xB26666  #S-shape
+    beq $t4, $t3, S_shape_rot
+ 
+    li $t3, 0x7C8A73  #Z-shape
+    beq $t4, $t3, Z_shape_rot
+    
+    li $t3, 0xC97A53  #L-shape
+    beq $t4, $t3, L_shape_rot
+    
+    li $t3, 0xE26B8A  #J-shape
+    beq $t4, $t3, J_shape_rot
+    
+    li $t3, 0x8D6E99
+    j T_shape_rot
+
+###################################
+
+I_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, I_pos_1
+    j I_pos_2
+    
+I_pos_1:    
+    addi $s1, $a1, 12
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+   
+    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 4
+    addi $s2, $s0, 8    
+    addi $s3, $s0, 12    
+    j keyboard_update               
+                              
+I_pos_2:    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 128
+    addi $s2, $s0, 256    
+    addi $s3, $s0, 384   
+    j keyboard_update
+    
+######################################
+
+S_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, S_pos_2
+    
+S_pos_1:    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s0, $s0, 128
+    addi $s4, $s0, 128
+    addi $s2, $s0, 132    
+    addi $s3, $s0, 260    
+    j keyboard_update               
+                              
+S_pos_2:    
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s0, $s0, 128
+    subi $s4, $s0, 124
+    addi $s2, $s0, 4    
+    subi $s3, $s0, 120   
+    j keyboard_update
+    
+######################################### 
+Z_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, Z_pos_2
+    
+Z_pos_1:    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s0, $s0, 128
+    addi $s4, $s0, 128
+    subi $s2, $s0, 124    
+    addi $s3, $s0, 4    
+    j keyboard_update               
+                              
+Z_pos_2:    
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+    
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s0, $s0, 128
+    addi $s4, $s0, 4
+    addi $s2, $s0, 132    
+    addi $s3, $s0, 136   
+    j keyboard_update
+    
+##########################################
+
+L_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_1_2
+    
+    addi $s1, $a1, 132     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_3
+    j L_pos_4
+    
+L_pos_1_2:
+    addi $s1, $a1, 4     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_2
+    j L_pos_1
+    
+L_pos_1:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+        
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 128
+    addi $s2, $s0, 4    
+    addi $s3, $s0, 8    
+    j keyboard_update               
+                              
+L_pos_2:   
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 4
+    addi $s2, $s0, 132    
+    addi $s3, $s0, 260   
+    j keyboard_update
+        
+L_pos_3:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+        
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s0, $s0, 128
+    addi $s4, $s0, 4
+    subi $s2, $s0, 120    
+    addi $s3, $s0, 8    
+    j keyboard_update 
+    
+L_pos_4:   
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s0, $s0, 128
+    addi $s4, $s0, 128
+    addi $s2, $s0, 256    
+    addi $s3, $s0, 260   
+    j keyboard_update          
+
+##########################################
+
+J_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_2_3
+    
+    addi $s1, $a1, 136     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_4
+    j J_pos_1
+    
+J_pos_2_3:
+    addi $s1, $a1, 4     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_3
+    j J_pos_2
+    
+J_pos_1:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+        
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s0, $s0, 256
+    addi $s4, $s0, 128
+    addi $s2, $s0, 132    
+    addi $s3, $s0, 136    
+    j keyboard_update               
+                              
+J_pos_2:   
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 128
+    addi $s2, $s0, 256    
+    addi $s3, $s0, 4   
+    j keyboard_update
+        
+J_pos_3:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+        
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 4
+    addi $s2, $s0, 8    
+    addi $s3, $s0, 136    
+    j keyboard_update 
+    
+J_pos_4:   
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s0, $s0, 256
+    subi $s4, $s0, 252
+    subi $s2, $s0, 124    
+    addi $s3, $s0, 4   
+    j keyboard_update   
+##########################################
+
+T_shape_rot:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 132     # check if right down is still part of tetris
+    lw $t4, 0($s1)
+    bne $t4, $t3, T_pos_3
+    
+    addi $s1, $a1, 4     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    bne $t4, $t3, T_pos_4
+    
+    addi $s1, $a1, 8     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, T_pos_1
+    j T_pos_2
+    
+T_pos_1:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s0, $s0, 128
+    subi $s4, $s0, 124
+    addi $s2, $s0, 4    
+    addi $s3, $s0, 132 
+    j keyboard_update               
+                              
+T_pos_2:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall
+       
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s4, $s0, 124
+    addi $s2, $s0, 4    
+    addi $s3, $s0, 8   
+    j keyboard_update
+        
+T_pos_3:     
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    subi $s0, $s0, 128
+    addi $s4, $s0, 128
+    addi $s2, $s0, 256    
+    addi $s3, $s0, 132    
+    j keyboard_update 
+    
+T_pos_4:
+    addi $s1, $a1, 8
+    lw $t4, 0($s1)
+    beq $t4, $t9, keyboard    # check right most touches the wall  
+     
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    addi $s4, $s0, 4
+    addi $s2, $s0, 132    
+    addi $s3, $s0, 8   
+    j keyboard_update          
+#########################################      
+keyboard_update:  
     jal delete_shape
-    
-    subi $sp, $sp, 16   # Allocate 20 bytes on the stack
-    sw $s0, 0($sp)      # Store value 'a' at 0($sp)
-    sw $s4, 4($sp)      # Store value 'b' at 4($sp)
-    sw $s2, 8($sp)      # Store value 'c' at 8($sp)
-    sw $s3, 12($sp)     # Store value 'd' at 12($sp)
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)     
     move $a0, $t3
     jal fill_color
-    b keyboard    
-                              
-
+    b keyboard
 #####################################     
 Terminate:
     li $v0, 10             # Terminate the program gracefully
