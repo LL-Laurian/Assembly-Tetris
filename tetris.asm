@@ -72,7 +72,7 @@ main:
 ##############################################################################  
 
 ##########################################################
-init_shape:      
+init_shape:   
     beq $t1, 0, U_shape
     beq $t1, 1, I_shape
     beq $t1, 2, S_shape
@@ -135,9 +135,9 @@ keyboard:
 
 keyboard_input:                     # A key is pressed
     lw $a0, 4($t0)                  # Load second word from keyboard
-    beq $a0, 0x71, Terminate     # Check if the key q was pressed
-    beq $a0, 0x77, respond_to_W     # Check if the key q was pressed
-    #beq $a0, 0x1E, respond_to_A
+    beq $a0, 0x71, Terminate        # Check if the key q was pressed
+    beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
+    #beq $a0, 0x1E, respond_to_A     # Check if the key a was pressed
     #beq $a0, 0x1F, respond_to_S
     #beq $a0, 0x20, respond_to_D
 
@@ -155,17 +155,63 @@ respond_to_W:
     beq $t4, $t9, keyboard
    
     
-   
-   jal delete_shape                           
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    subi $s0, $s0, 4    # move left
+    
+    lw $s4, 4($sp)      # move left
+    subi $s4, $s4, 4     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    subi $s2, $s2, 4    # move left
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    subi $s3, $s3, 4    # move left
+    
+    
+    
+    jal delete_shape
+    
+    subi $sp, $sp, 16   # Allocate 20 bytes on the stack
+    sw $s0, 0($sp)      # Store value 'a' at 0($sp)
+    sw $s4, 4($sp)      # Store value 'b' at 4($sp)
+    sw $s2, 8($sp)      # Store value 'c' at 8($sp)
+    sw $s3, 12($sp)     # Store value 'd' at 12($sp)
+    move $a0, $t3
+    jal fill_color
+    b keyboard
+    
+                              
 
-##############################################################################                                                                        
-
-
+#####################################     
 Terminate:
     li $v0, 10             # Terminate the program gracefully
     syscall
     
-#####################################
+#####################################                                
+#FUNCTIONS START HERE
+##############################################################################                                                                        
+fill_color:
+    li $t2, 1            # Initialize counter (starting value)
+    lw $t6, 0($sp)       # Load base address from stack into $t6
+
+fill_loop:
+    beq $t2, 5, exit_fill_color  # Exit loop when counter equals 5
+    sw $a0, 0($t6)      # Store value in $a0 at address $t5
+
+fill_color_update:
+    mul $t3, $t2, 4     # Compute offset (4 bytes per element)
+    add $t3, $sp, $t3   # Update address in $t6
+    lw $t6, 0($t3)
+    addi $t2, $t2, 1    # Increment counter
+    j fill_loop         # Repeat loop
+
+exit_fill_color:
+    jr $ra              # Return from function
+  
+############################################################################## 
+
+
 delete_shape:
     li $t5, 0xE4DCD1       # gret color
     li $t7, 0xC5CCD6       # white color
@@ -284,7 +330,7 @@ U_shape_Fill:
    
    addi $t9, $t6, 132
    sw $t5, 0($t9)
-   sw $t9, 16($sp)
+   sw $t9, 12($sp)
    
    jr $ra
    
