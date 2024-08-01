@@ -41,7 +41,9 @@
 
     .data
 ##############################################################################
-string: .asciiz "$t2:"  # Define the string with a null terminator
+string: .asciiz "right loop is ran\n"
+counter: .asciiz "current counter is "
+newline: .asciiz "\n"
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -64,16 +66,20 @@ ADDR_KBRD:
 main:
     lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     jal init_walls_board   # Call the subroutine to initialize the walls and board
+
+start:
+    lw $t0, ADDR_DSPL
+    
     jal random_shape
+    
     addi $t6, $t0, 64      # intially set t6 to be in the middle
     li $t3, 16             # $t3 is x index of the left-most grid; intially 16
     j init_shape
-
 ##############################################################################  
 
 ##########################################################
 init_shape: 
-   #li $t1, 6  
+   li $t1, 1  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -222,15 +228,12 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x71, Terminate        # Check if the key q was pressed
     beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
     beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
+    beq $a0, 0x64, respond_to_D
     beq $a0, 0x73, respond_to_S
-    #beq $a0, 0x20, respond_to_D
-
-    li $v0, 1                       # ask system to print $a0
-    syscall
 
     b keyboard
 
-respond_to_W:
+respond_to_A:
     li $t9, 0x8A8F9A       # wall
     
     lw $a1, 0($sp)
@@ -254,7 +257,7 @@ respond_to_W:
    
     j keyboard_update
 
-respond_to_A:
+respond_to_D:
     li $t9, 0x8A8F9A       # wall
     
     lw $a1, 12($sp)
@@ -278,7 +281,7 @@ respond_to_A:
     
     j keyboard_update
     
-respond_to_S:
+respond_to_W:
     li $t3, 0xD9A867 #U-shape
     lw $a1, 0($sp)
     lw $t4, 0($a1)
@@ -301,9 +304,36 @@ respond_to_S:
     
     li $t3, 0x8D6E99
     j T_shape_rot
+    
+respond_to_S:
+    li $t5, 0xE4DCD1       # grey color
+    li $t7, 0xC5CCD6       # white color
+    
+    li $t3, 0xD9A867 #U-shape
+    lw $a1, 0($sp)
+    lw $t4, 0($a1)
+    beq $t4, $t3, U_shape_drop
+
+    li $t3, 0x003D6B  #I-shape
+    beq $t4, $t3, I_shape_drop
+
+    li $t3, 0xB26666  #S-shape
+    beq $t4, $t3, S_shape_drop
+ 
+    li $t3, 0x7C8A73  #Z-shape
+    beq $t4, $t3, Z_shape_drop
+    
+    li $t3, 0xC97A53  #L-shape
+    beq $t4, $t3, L_shape_drop
+    
+    li $t3, 0xE26B8A  #J-shape
+    beq $t4, $t3, J_shape_drop
+    
+    li $t3, 0x8D6E99
+    j T_shape_drop
 
 ###################################
-
+#ROTATION
 I_shape_rot:
     li $t9, 0x8A8F9A       # wall
     lw $a1, 0($sp)
@@ -557,10 +587,269 @@ T_pos_4:
     addi $s4, $s0, 4
     addi $s2, $s0, 132    
     addi $s3, $s0, 8   
-    j keyboard_update          
+    j keyboard_update   
+ ################################################################################################## 
+#DROP/COLLISION
+
+U_shape_drop:
+    lw $a0, 4($sp)
+    lw $a1, 12($sp)
+    jal base_2_drop              
+    #jal check_removal
+    j init_shape                         
+#################################
+    
+I_shape_drop:
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, I_pos_1_drop
+    j I_pos_2_drop
+    
+I_pos_1_drop:    
+    lw $v1, 12($sp)
+
+I_base_1_drop:
+    addi $v1, $v1, 128
+    lw $t1, 0($v1)
+    bne $t1, $t5, I_base_1_further_check1
+    j I_base_1_update
+    
+I_base_1_further_check1:
+    bne $t1, $t7, I_base_1_exit_drop 
+
+I_base_1_update:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 128    # move down
+    
+    lw $s4, 4($sp)      # move down
+    addi $s4, $s4, 128     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 128    # move down
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 128    # move down
+    
+    jal delete_shape
+    
+    #li $v0, 4
+    #la $a0, string
+    #syscall
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)  
+    move $a0, $t3
+    
+    jal fill_color
+    j I_base_1_drop
+    
+I_base_1_exit_drop:
+    addi $sp, $sp, 16         
+    #jal check_removal             
+    b start
+                               
+I_pos_2_drop:    
+    lw $a0, 0($sp)
+    lw $a1, 4($sp)
+    lw $a2, 8($sp)
+    lw $a3, 12($sp)
+    jal base_4_drop              
+    #jal check_removal 
+    j init_shape 
+######################################
+
+S_shape_drop:
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, S_pos_2_drop
+    
+S_pos_1_drop:    
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp)              
+    lw $a2, 12($sp)
+    jal base_3_drop              
+    #jal check_removal 
+    j init_shape                          
+S_pos_2_drop:    
+    lw $a0, 4($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal
+    j init_shape 
+######################################### 
+Z_shape_drop:
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128
+    lw $t4, 0($s1)
+    beq $t4, $t3, Z_pos_2_drop
+    
+Z_pos_1_drop:    
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp)              
+    lw $a2, 12($sp)
+    jal base_3_drop              
+    #jal check_removal              
+    j init_shape                           
+Z_pos_2_drop:    
+    lw $a0, 4($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal
+    j init_shape 
+##########################################
+
+L_shape_drop:
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_1_2_drop
+    
+    addi $s1, $a1, 132     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_3_drop
+    j L_pos_4_drop
+    
+L_pos_1_2_drop:
+    addi $s1, $a1, 4     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, L_pos_2_drop
+    j L_pos_1_drop
+    
+L_pos_1_drop:
+    lw $a0, 8($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal             
+    j init_shape                           
+L_pos_2_drop:   
+    lw $a0, 4($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp) 
+    lw $a2, 12($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal
+    j init_shape     
+L_pos_3_drop:
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 4($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal
+    j init_shape 
+L_pos_4_drop:   
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 4($sp)      # Store address at 0($sp) 
+    lw $a2, 8($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal          
+    j init_shape
+     
+##########################################
+
+J_shape_drop:
+    lw $a1, 0($sp)
+    addi $s1, $a1, 128     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_2_3_drop
+    
+    addi $s1, $a1, 136     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_4_drop
+    j J_pos_1_drop
+    
+J_pos_2_3_drop:
+    addi $s1, $a1, 4     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, J_pos_3_drop
+    j J_pos_2_drop
+    
+J_pos_1_drop:
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal     
+    j init_shape 
+                              
+J_pos_2_drop:   
+    lw $a0, 4($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp) 
+    lw $a2, 12($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal 
+    j init_shape     
+J_pos_3_drop:
+    lw $a0, 8($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal 
+    j init_shape 
+J_pos_4_drop:   
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 4($sp)      # Store address at 0($sp) 
+    lw $a2, 12($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal
+    j init_shape    
+    
+##########################################
+
+T_shape_drop:
+    li $t9, 0x8A8F9A       # wall
+    lw $a1, 0($sp)
+    addi $s1, $a1, 132     # check if right down is still part of tetris
+    lw $t4, 0($s1)
+    bne $t4, $t3, T_pos_3_drop
+    
+    addi $s1, $a1, 4     # check if below is still part of tetris
+    lw $t4, 0($s1)
+    bne $t4, $t3, T_pos_4_drop
+    
+    addi $s1, $a1, 8     # check if right is still part of tetris
+    lw $t4, 0($s1)
+    beq $t4, $t3, T_pos_1_drop
+    j T_pos_2_drop
+    
+T_pos_1_drop:
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp) 
+    lw $a2, 12($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal               
+    j init_shape   
+                            
+T_pos_2_drop:
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal 
+    j init_shape  
+      
+T_pos_3_drop:     
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 8($sp)      # Store address at 0($sp) 
+    lw $a2, 12($sp)      # Store address at 0($sp)                
+    jal base_3_drop              
+    #jal check_removal  
+    j init_shape 
+    
+T_pos_4_drop:
+    lw $a0, 0($sp)      # Store address at 0($sp)
+    lw $a1, 12($sp)      # Store address at 0($sp)              
+    jal base_2_drop              
+    #jal check_removal
+    j init_shape   
+             
+########################################
+                                                                                                                                                                                    
+                                                                                
 #########################################      
 keyboard_update:  
     jal delete_shape
+    
     subi $sp, $sp, 16   # Allocate 16 bytes on the stack
     sw $s0, 0($sp)      
     sw $s4, 4($sp)      
@@ -576,7 +865,120 @@ Terminate:
     
 #####################################                                
 #FUNCTIONS START HERE
-##############################################################################                                                                        
+##############################################################################
+
+ 
+##############################################################################
+base_2_drop:
+    addi $a0, $a0, 128
+    addi $a1, $a1, 128
+    
+    bne $a0, $t5, base_2_further_check1
+    
+base_2_further_check1:
+    bne $a0, $t7, base_2_exit_drop 
+    bne $a1, $t5, base_2_further_check2
+    
+base_2_further_check2:    
+    bne $a1, $t7, base_2_exit_drop
+
+    #jal drop_update
+    j base_2_drop
+    
+base_2_exit_drop:
+    addi $sp, $sp, 16
+    jr $ra
+ 
+##############################################################################
+base_3_drop:
+    addi $a0, $a0, 128
+    addi $a1, $a1, 128
+    addi $a2, $a2, 128
+    
+    bne $a0, $t5, base_3_further_check1
+    
+base_3_further_check1:
+    bne $a0, $t7, base_3_exit_drop 
+    bne $a1, $t5, base_3_further_check2
+    
+base_3_further_check2:    
+    bne $a1, $t7, base_3_exit_drop
+    bne $a2, $t5, base_3_further_check3
+    
+base_3_further_check3:
+    bne $a2, $t7, base_3_exit_drop
+
+    #jal drop_update
+    j base_3_drop
+    
+base_3_exit_drop:
+    addi $sp, $sp, 16
+    jr $ra                                                                                       
+##############################################################################
+
+base_4_drop:
+    addi $a0, $a0, 128
+    addi $a1, $a1, 128
+    addi $a2, $a2, 128
+    addi $a3, $a3, 128
+    
+    bne $a0, $t5, base_4_further_check1
+    
+base_4_further_check1:
+    bne $a0, $t7, base_4_exit_drop
+    bne $a1, $t5, base_4_further_check2
+    
+base_4_further_check2:    
+    bne $a1, $t7, base_4_exit_drop
+    bne $a2, $t5, base_4_further_check3
+    
+base_4_further_check3:
+    bne $a3, $t7, base_4_exit_drop
+    bne $a2, $t5, base_4_further_check3
+    
+base_4_further_check4:
+    bne $a3, $t7, base_4_exit_drop
+
+    #jal drop_update
+    j base_4_drop
+    
+base_4_exit_drop:
+    addi $sp, $sp, 16
+    jr $ra                                                                                       
+##############################################################################                                                                         
+drop_update:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 128    # move down
+    
+    lw $s4, 4($sp)      # move down
+    addi $s4, $s4, 128     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 128    # move down
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 128    # move down
+    
+    jal delete_shape
+    
+    #li $v0, 4
+    #la $a0, string
+    #syscall
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)  
+    move $a0, $t3
+    
+    jal fill_color
+    
+    jr $ra                                                                                                                                                
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                                                                                                
+ ##########################################################################                                                                                                                                                                                                                                                                                                                                                                                                                                               
 fill_color:
     li $t2, 1            # Initialize counter (starting value)
     lw $t6, 0($sp)       # Load base address from stack into $t6
@@ -603,28 +1005,38 @@ delete_shape:
     li $t9, 0x8A8F9A       # wall
     li $t2, 4
     
-    lw $a0, 12($sp)
-    
+    li $t6, 1
     lw $a1, 0($sp)
     subi $s1, $a1, 4
     lw $t4, 0($s1)      
-    beq $t4, $t9, right_loop
+    bne $t4, $t9, left_loop
+
+    li $t6, 0
+    lw $t9, 12($sp)
+    sw $a1, 12($sp)
+    sw $t9, 0($sp)
     
+    lw $a1, 4($sp)
+    lw $t9, 8($sp)
+    sw $a1, 8($sp)
+    sw $t9, 4($sp)
+    lw $a1, 0($sp)
+       
 left_loop: 
     beq $t2, 0, exit_deletetion
     lw $a1, 0($sp)
+    
+    beq $t6, 1, check_left
+    addi $s1, $a1, 4 #check color on the right
+    j check_color
+    
+check_left:
     subi $s1, $a1, 4 #check color on the left
     
+check_color:    
     lw $t4, 0($s1)
     beq $t4, $t7, left_grey
     beq $t4, $t5, left_white
-    
-right_loop: 
-    beq $t2, 0, right_exit_deletetion
-    addi $s1, $a0, 4   #check color on the right
-    lw $t4, 0($s1)
-    beq $t4, $t7, right_grey
-    beq $t4, $t5, right_white
     
 left_grey:
     sw $t5, 0($a1)
@@ -638,27 +1050,12 @@ left_update:
     addi $sp, $sp, 4
     subi $t2, $t2, 1
     j left_loop
-           
-right_grey:
-    sw $t5, 0($a0)
-    j right_update
-    
-right_white:
-    sw $t7, 0($a0)
-    j right_update
-     
-right_update: 
-    subi $t2, $t2, 1
-    mul $t9, $t2, 4
-    add $a0, $sp, $t9
-    j right_loop
-    
+        
 exit_deletetion:
     jr $ra
-         
-right_exit_deletetion:
-    addi $sp, $sp, 16
-    jr $ra     
+        
+###############################
+
     
 ###############################
 random_shape:
