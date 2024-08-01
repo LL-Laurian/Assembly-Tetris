@@ -79,7 +79,7 @@ start:
 
 ##########################################################
 init_shape: 
-   li $t1, 3  
+   li $t1, 1  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -592,11 +592,9 @@ T_pos_4:
 #DROP/COLLISION
 
 U_shape_drop:
-    lw $a0, 4($sp)
-    lw $a1, 12($sp)
-    jal base_2_drop              
-    #jal check_removal
-    j init_shape                         
+    lw $v0, 4($sp)
+    lw $v1, 12($sp)
+    j base_2_drop                
 #################################
     
 I_shape_drop:
@@ -608,46 +606,7 @@ I_shape_drop:
     
 I_pos_1_drop:    
     lw $v1, 12($sp)
-
-I_base_1_drop:
-    addi $v1, $v1, 128
-    lw $t1, 0($v1)
-    bne $t1, $t5, I_base_1_further_check1
-    j I_base_1_update
-    
-I_base_1_further_check1:
-    bne $t1, $t7, I_base_1_exit_drop 
-
-I_base_1_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
-    
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
-    
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
-    
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
-    
-    jal delete_shape
-    
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    j I_base_1_drop
-    
-I_base_1_exit_drop:
-    addi $sp, $sp, 16         
-    #jal check_removal             
-    b start
+    j base_1_drop 
                                
 I_pos_2_drop:    
     lw $a0, 0($sp)
@@ -699,57 +658,7 @@ Z_pos_1_drop:
 Z_pos_2_drop:    
     lw $v1, 4($sp)      # Store address at 0($sp)
     lw $v0, 12($sp)      # Store address at 0($sp)              
-    
-Z_base_2_drop:
-    addi $v1, $v1, 128
-    addi $v0, $v0, 128
-    lw $t1, 0($v1)
-    lw $t2, 0($v0)
-    bne $t1, $t5, Z_base_2_further_check1
-    j Z_base_2_update
-    
-Z_base_2_further_check1:
-    bne $t1, $t7, Z_base_2_exit_drop   
-    bne $t2, $t5, Z_base_2_further_check3
-    j Z_base_2_update
-    
-Z_base_2_further_check3:    
-    bne $t2, $t7, Z_base_2_exit_drop
-    
-Z_base_2_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
-    
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
-    
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
-    
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
-    
-    jal delete_shape
-    
-    #li $v0, 4
-    #la $a0, string
-    #syscall
-    
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    j Z_base_2_drop
-    
-Z_base_2_exit_drop:
-    addi $sp, $sp, 16         
-    #jal check_removal             
-    b start
+    j base_2_drop
     
 ##########################################
 
@@ -893,7 +802,94 @@ T_pos_4_drop:
     j init_shape   
              
 ########################################
-                                                                                                                                                                                    
+base_1_drop:
+    addi $v1, $v1, 128
+    lw $t1, 0($v1)
+    bne $t1, $t5, base_1_further_check1
+    j base_1_update
+    
+base_1_further_check1:
+    bne $t1, $t7, base_1_exit_drop 
+
+base_1_update:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 128    # move down
+    
+    lw $s4, 4($sp)      # move down
+    addi $s4, $s4, 128     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 128    # move down
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 128    # move down
+    
+    jal delete_shape
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)  
+    move $a0, $t3
+    
+    jal fill_color
+    j base_1_drop
+    
+base_1_exit_drop:
+    addi $sp, $sp, 16         
+    #jal check_removal             
+    b start
+
+######################################
+base_2_drop:
+    addi $v1, $v1, 128
+    addi $v0, $v0, 128
+    lw $t1, 0($v1)
+    lw $t2, 0($v0)
+    bne $t1, $t5, base_2_further_check1
+    j base_2_update
+    
+base_2_further_check1:
+    bne $t1, $t7, base_2_exit_drop   
+    bne $t2, $t5, base_2_further_check3
+    j base_2_update
+    
+base_2_further_check3:    
+    bne $t2, $t7, base_2_exit_drop
+    
+base_2_update:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 128    # move down
+    
+    lw $s4, 4($sp)      # move down
+    addi $s4, $s4, 128     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 128    # move down
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 128    # move down
+    
+    jal delete_shape
+    
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)  
+    move $a0, $t3
+    
+    jal fill_color
+    j base_2_drop
+    
+base_2_exit_drop:
+    addi $sp, $sp, 16         
+    #jal check_removal             
+    b start                                                                                                                                                                                    
                                                                                 
 #########################################      
 keyboard_update:  
@@ -918,25 +914,7 @@ Terminate:
 
  
 ##############################################################################
-base_2_drop:
-    addi $a0, $a0, 128
-    addi $a1, $a1, 128
-    
-    bne $a0, $t5, base_2_further_check1
-    
-base_2_further_check1:
-    bne $a0, $t7, base_2_exit_drop 
-    bne $a1, $t5, base_2_further_check2
-    
-base_2_further_check2:    
-    bne $a1, $t7, base_2_exit_drop
 
-    #jal drop_update
-    j base_2_drop
-    
-base_2_exit_drop:
-    addi $sp, $sp, 16
-    jr $ra
  
 ##############################################################################
 base_3_drop:
