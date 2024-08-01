@@ -79,7 +79,7 @@ start:
 
 ##########################################################
 init_shape: 
-   li $t1, 3  
+   #li $t1, 3  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -609,10 +609,10 @@ I_pos_1_drop:
     j base_1_drop 
                                
 I_pos_2_drop:    
-    lw $a0, 0($sp)
-    lw $a1, 4($sp)
-    lw $a2, 8($sp)
-    lw $a3, 12($sp)
+    lw $v0, 0($sp)
+    lw $v1, 4($sp)
+    lw $s5, 8($sp)
+    lw $s6, 12($sp)
     j base_4_drop              
 
 ######################################
@@ -883,7 +883,7 @@ base_3_drop:
     addi $s5, $s5, 128
     lw $t1, 0($v1)
     lw $t2, 0($v0)
-    lw $t2, 0($s5)
+    lw $t3, 0($s5)
     bne $t1, $t5, base_3_further_check1
     j base_3_update
     
@@ -894,11 +894,11 @@ base_3_further_check1:
     
 base_3_further_check3:    
     bne $t2, $t7, base_3_exit_drop   
-    bne $s5, $t5, base_3_further_check4
+    bne $t3, $t5, base_3_further_check4
     j base_3_update
     
 base_3_further_check4:    
-    bne $s5, $t7, base_3_exit_drop
+    bne $t3, $t7, base_3_exit_drop
     
 base_3_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -931,6 +931,68 @@ base_3_exit_drop:
     addi $sp, $sp, 16         
     #jal check_removal             
     b start                                                                                                
+#########################################  
+base_4_drop:
+    addi $v1, $v1, 128
+    addi $v0, $v0, 128
+    addi $s5, $s5, 128
+    addi $s6, $s6, 128
+    lw $t1, 0($v1)
+    lw $t2, 0($v0)
+    lw $t2, 0($s5)
+    lw $t4, 0($s6)
+    bne $t1, $t5, base_4_further_check1
+    j base_4_update
+    
+base_4_further_check1:
+    bne $t1, $t7, base_4_exit_drop   
+    bne $t2, $t5, base_4_further_check3
+    j base_4_update
+    
+base_4_further_check3:    
+    bne $t2, $t7, base_4_exit_drop   
+    bne $t3, $t5, base_4_further_check4
+    j base_4_update
+    
+base_4_further_check4:    
+    bne $t3, $t7, base_4_exit_drop   
+    bne $t4, $t5, base_4_further_check5
+    j base_4_update
+    
+base_4_further_check5:    
+    bne $t4, $t7, base_4_exit_drop
+    
+base_4_update:
+    lw $s0, 0($sp)      # Store address at 0($sp)
+    lw $t3, 0($s0)      # store color
+    addi $s0, $s0, 128    # move down
+    
+    lw $s4, 4($sp)      # move down
+    addi $s4, $s4, 128     # Store address at 4($sp)
+    
+    lw $s2, 8($sp)      # Store address at 8($sp)
+    addi $s2, $s2, 128    # move down
+    
+    lw $s3, 12($sp)     # Store address at 12($sp)
+    addi $s3, $s3, 128    # move down
+    
+    jal delete_shape
+    
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)  
+    move $a0, $t3
+    
+    jal fill_color
+    j base_4_drop
+    
+base_4_exit_drop:
+    addi $sp, $sp, 16         
+    #jal check_removal             
+    b start                                                                                                
 #########################################      
 keyboard_update:  
     jal delete_shape
@@ -957,36 +1019,7 @@ Terminate:
 
                                                                                    
 ##############################################################################
-
-base_4_drop:
-    addi $a0, $a0, 128
-    addi $a1, $a1, 128
-    addi $a2, $a2, 128
-    addi $a3, $a3, 128
-    
-    bne $a0, $t5, base_4_further_check1
-    
-base_4_further_check1:
-    bne $a0, $t7, base_4_exit_drop
-    bne $a1, $t5, base_4_further_check2
-    
-base_4_further_check2:    
-    bne $a1, $t7, base_4_exit_drop
-    bne $a2, $t5, base_4_further_check3
-    
-base_4_further_check3:
-    bne $a3, $t7, base_4_exit_drop
-    bne $a2, $t5, base_4_further_check3
-    
-base_4_further_check4:
-    bne $a3, $t7, base_4_exit_drop
-
-    #jal drop_update
-    j base_4_drop
-    
-base_4_exit_drop:
-    addi $sp, $sp, 16
-    jr $ra                                                                                       
+                                                                         
 ##############################################################################                                                                         
 drop_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
