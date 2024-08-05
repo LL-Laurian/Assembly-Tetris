@@ -211,18 +211,18 @@ J_shape:
 
 init_shape_done:
    jal fill_color
-   j keyboard
-    
-###############################################################################
+
+   #######################################################
+   ###############################################################################
 keyboard:
 	li 		$v0, 32
-	li 		$a0, 1
+	li 		$a0, 200
 	syscall
 
     lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
     lw $t8, 0($t0)                  # Load first word from keyboard
     beq $t8, 1, keyboard_input      # If first word 1, key is pressed
-    b keyboard
+    b Auto_drop
 
 keyboard_input:                     # A key is pressed
     lw $a0, 4($t0)                  # Load second word from keyboard
@@ -230,7 +230,7 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
     beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
     beq $a0, 0x64, respond_to_D
-    beq $a0, 0x73, respond_to_S
+    #beq $a0, 0x73, respond_to_S
 
     b keyboard
 
@@ -240,7 +240,7 @@ respond_to_A:
     lw $a1, 0($sp)
     subi $s1, $a1, 4
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check left most touches the wall
+    beq $t4, $t9, Auto_drop    # check left most touches the wall
    
     
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -264,7 +264,7 @@ respond_to_D:
     lw $a1, 12($sp)
     addi $s1, $a1, 4
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
    
     
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -305,33 +305,10 @@ respond_to_W:
     
     li $t3, 0x8D6E99
     j T_shape_rot
-    
-respond_to_S:
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
-    
-    li $t3, 0xD9A867 #U-shape
-    lw $a1, 0($sp)
-    lw $t4, 0($a1)
-    beq $t4, $t3, U_shape_drop
 
-    li $t3, 0x003D6B  #I-shape
-    beq $t4, $t3, I_shape_drop
-
-    li $t3, 0xB26666  #S-shape
-    beq $t4, $t3, S_shape_drop
- 
-    li $t3, 0x7C8A73  #Z-shape
-    beq $t4, $t3, Z_shape_drop
-    
-    li $t3, 0xC97A53  #L-shape
-    beq $t4, $t3, L_shape_drop
-    
-    li $t3, 0xE26B8A  #J-shape
-    beq $t4, $t3, J_shape_drop
-    
-    li $t3, 0x8D6E99
-    j T_shape_drop
+Terminate:
+    li $v0, 10             # Terminate the program gracefully
+    syscall    
 
 ###################################
 #ROTATION
@@ -346,7 +323,7 @@ I_shape_rot:
 I_pos_1:    
     addi $s1, $a1, 12
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
    
     
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -382,7 +359,7 @@ S_pos_1:
 S_pos_2:    
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
     
     lw $s0, 0($sp)      # Store address at 0($sp)
     addi $s0, $s0, 128
@@ -410,7 +387,7 @@ Z_pos_1:
 Z_pos_2:    
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
     
     lw $s0, 0($sp)      # Store address at 0($sp)
     subi $s0, $s0, 128
@@ -442,7 +419,7 @@ L_pos_1_2:
 L_pos_1:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
         
     lw $s0, 0($sp)      # Store address at 0($sp)
     addi $s4, $s0, 128
@@ -460,7 +437,7 @@ L_pos_2:
 L_pos_3:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
         
     lw $s0, 0($sp)      # Store address at 0($sp)
     addi $s0, $s0, 128
@@ -500,7 +477,7 @@ J_pos_2_3:
 J_pos_1:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
         
     lw $s0, 0($sp)      # Store address at 0($sp)
     subi $s0, $s0, 256
@@ -519,7 +496,7 @@ J_pos_2:
 J_pos_3:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
         
     lw $s0, 0($sp)      # Store address at 0($sp)
     addi $s4, $s0, 4
@@ -534,6 +511,7 @@ J_pos_4:
     subi $s2, $s0, 124    
     addi $s3, $s0, 4   
     j keyboard_update   
+    
 ##########################################
 
 T_shape_rot:
@@ -563,7 +541,7 @@ T_pos_1:
 T_pos_2:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall
+    beq $t4, $t9, Auto_drop    # check right most touches the wall
        
     lw $s0, 0($sp)      # Store address at 0($sp)
     subi $s4, $s0, 124
@@ -582,14 +560,54 @@ T_pos_3:
 T_pos_4:
     addi $s1, $a1, 8
     lw $t4, 0($s1)
-    beq $t4, $t9, keyboard    # check right most touches the wall  
+    beq $t4, $t9, Auto_drop    # check right most touches the wall  
      
     lw $s0, 0($sp)      # Store address at 0($sp)
     addi $s4, $s0, 4
     addi $s2, $s0, 132    
     addi $s3, $s0, 8   
-    j keyboard_update   
- ################################################################################################## 
+    j keyboard_update      
+
+#########################################        
+keyboard_update:  
+    jal delete_shape
+    
+    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)      
+    sw $s4, 4($sp)      
+    sw $s2, 8($sp)      
+    sw $s3, 12($sp)     
+    move $a0, $t3
+    jal fill_color
+    
+ #############################################   
+Auto_drop:
+    li $t5, 0xE4DCD1       # grey color
+    li $t7, 0xC5CCD6       # white color
+    
+    li $t3, 0xD9A867 #U-shape
+    lw $a1, 0($sp)
+    lw $t4, 0($a1)
+    beq $t4, $t3, U_shape_drop
+
+    li $t3, 0x003D6B  #I-shape
+    beq $t4, $t3, I_shape_drop
+
+    li $t3, 0xB26666  #S-shape
+    beq $t4, $t3, S_shape_drop
+ 
+    li $t3, 0x7C8A73  #Z-shape
+    beq $t4, $t3, Z_shape_drop
+    
+    li $t3, 0xC97A53  #L-shape
+    beq $t4, $t3, L_shape_drop
+    
+    li $t3, 0xE26B8A  #J-shape
+    beq $t4, $t3, J_shape_drop
+    
+    li $t3, 0x8D6E99
+    j T_shape_drop    
+###############################################################################
 #DROP/COLLISION
 
 U_shape_drop:
@@ -821,13 +839,13 @@ base_1_update:
     move $a0, $t3
     
     jal fill_color
-    j base_1_drop
+    j keyboard
     
 base_1_exit_drop:
     addi $sp, $sp, 16         
     #jal check_removal             
     b start
-
+    
 ######################################
 base_2_drop:
     addi $v1, $v1, 128
@@ -870,12 +888,13 @@ base_2_update:
     move $a0, $t3
     
     jal fill_color
-    j base_2_drop
+    j keyboard
     
 base_2_exit_drop:
     addi $sp, $sp, 16         
     #jal check_removal             
-    b start                                                                                                                                                                                    
+    b start
+                                                                                                                                                                                  
 #########################################
 
 base_3_drop:
@@ -930,12 +949,15 @@ base_3_update:
     move $a0, $t3
     
     jal fill_color
-    j base_3_drop
+    j keyboard
+
     
 base_3_exit_drop:
     addi $sp, $sp, 16         
     #jal check_removal             
-    b start                                                                                                
+    b start
+    #li $v0, 10             # Terminate the program gracefully
+    #syscall                                                                                                
 #########################################  
 base_4_drop:
     addi $v1, $v1, 128
@@ -998,308 +1020,17 @@ base_4_update:
     move $a0, $t3
     
     jal fill_color
-    j base_4_drop
+    j keyboard
     
 base_4_exit_drop:
     addi $sp, $sp, 16         
     #jal check_removal             
-    b start                                                                                                
-#########################################
-check_removal:
-    lw $t0, ADDR_DSPL
-    li $t1, 124 
-    lw $a0, 0($sp)
-    jal calculate_row
-    move $s0, $v0
-    
-    lw $a0, 4($sp)
-    jal calculate_row
-    move $s1, $v0
-    
-    lw $a0, 8($sp)
-    jal calculate_row
-    move $s2, $v0
-    
-    lw $a0, 12($sp)
-    jal calculate_row
-    move $s3, $v0
-    addi $sp, $sp, 16
-    
-    jal sorted_rows
-    
-    li $a0, 'a'
-    li $v0, 12
-    syscall
-    
-    jal remove_duplicate
-    
-    lw $t3, 0($sp)
-    li $t4, 0
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
-    
-#check_rows_outer_loop:    
-    #beq $t2, 0, exit_check_rows_loop
-    #mul $t3, $t3, 124
-    #addi $t8, $t3, 16
-    #add $t8, $t0, $t8
-    #lw $t9, 0($t8)
-    #addi $t3, $t3, 124
-    #subi $t6, $t3, 16
-    #add $t6, $t0, $t6  
-    
- #check_rows_inner_loop:
-    #bgt $t8, $t6, exit_check_rows_inner_loop_full
-    #bne $t9, $t5, further_check_row_color
-    #j check_rows_inner_loop_update 
- #further_check_row_color: 
-    #bne $t9, $t7, exit_check_rows_inner_loop
-    #j check_rows_inner_loop_update
-    
-#check_rows_inner_loop_update:
-    #addi $t8, $t8, 4
-    #j check_rows_inner_loop
-    
-#exit_check_rows_inner_loop_full:
-    #jal remove_row
-    #j check_rows_outer_loop
-        
-#exit_check_rows_inner_loop:
-    #subi $t2, $t2, 1
-    #addi $t4, $t4, 1
-    #mul $s0, $t4, 4
-    #add $t3, $sp, $s0
-    #lw $t3, 0($t3)
-    #j check_rows_outer_loop
-    
-exit_check_rows_loop:
-    #add $sp, $sp, $s0
-    b start          
-#########################################        
-keyboard_update:  
-    jal delete_shape
-    
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)     
-    move $a0, $t3
-    jal fill_color
-    b keyboard
-#####################################     
-Terminate:
-    li $v0, 10             # Terminate the program gracefully
-    syscall
-    
-#####################################                                
-#FUNCTIONS START HERE
-##############################################################################
-calculate_row:
-    sub $a0, $a0, $t0    #calculate address
-    div $a0, $t1
-    mflo $v0
-    jr $ra
- 
-##############################################################################
-sorted_rows:
-    la $s7, numbers                # Load address of numbers into $s7
-    sw $s0, 0($s7)
-    sw $s1, 4($s7)
-    sw $s2, 8($s7)
-    sw $s3, 12($s7) 
-
-    li $s0, 0                      # Initialize counter 1 for outer loop
-    li $s6, 3                      # n - 1, where n = number of elements - 1
-
-
-sort_loop:
-    li $s1, 0                      # Reset inner loop counter
-
-inner_loop:
-    sll $t7, $s1, 2                # Multiply $s1 by 4 (word size)
-    add $t7, $s7, $t7              # Address of numbers[s1]
-    
-    lw $t0, 0($t7)                 # Load numbers[s1] into $t0
-    lw $t1, 4($t7)                 # Load numbers[s1 + 1] into $t1
-
-    sgt $t2, $t1, $t0              # If $t1 > $t0 (next element > current element)
-    beq $t2, $zero, no_swap        # If $t2 == 0, no swap needed
-
-    # Swap elements
-    sw $t1, 0($t7)                 # Store numbers[s1 + 1] in numbers[s1]
-    sw $t0, 4($t7)                 # Store numbers[s1] in numbers[s1 + 1]
-
-no_swap:
-    addi $s1, $s1, 1               # Increment inner loop counter
-    sub $s5, $s6, $s0              # Calculate remaining iterations
-    bne $s1, $s5, inner_loop       # If $s1 != $s5, continue inner loop
-
-    addi $s0, $s0, 1               # Increment outer loop counter
-    li $s1, 0                      # Reset inner loop counter
-    bne $s0, $s6, sort_loop        # If $s0 != $s6, continue outer loop
-
-
-final:
-   
-    jr $ra                     # Make the syscall to exit the program
-
-                                                                                   
-##############################################################################
-remove_duplicate:
-    li $t2, 0
-    la $s7, numbers
-    addi $t6, $s7, 12
-    addi $t5, $s7, 8
-    lw $v1, 0($s7)
-    
-check_loop:
-    lw $s6, 0($t6)
-    lw $s5, 0($t5)
-    
-    beq $s6, $v1, finish_loop    
-    beq $s6, $s5, update
-    subi $sp, $sp, 4
-    sw $s6, 0($sp)
-    addi $t2, $t2, 1
-    
- update:
-   mul $t3, $t2, -4
-   addi $t3, $t3, 12
-   add $t6, $s7, $t3
-   subi $t3, $t3, 4
-   add $t5, $s7, $t3 
-   j check_loop   
-   
- finish_loop:
-    beq $s6, $s5, update_done
-    subi $sp, $sp, 4
-    sw $s6, 0($sp)
-    addi $t2, $t2, 1
-    j exit_duplicate_loop
-    
- update_done:
-    subi $sp, $sp, 8
-    sw $s6, 4($sp)
-    sw $s5, 0($sp)
-    addi $t2, $t2, 2 
-    j exit_duplicate_loop
-    
-exit_duplicate_loop: 
-    lw $a0, 0($sp)
-    li $v0, 1
-    syscall
-    
-    jr $ra                                                                     
-##############################################################################
-remove_row:
-    move $s1, $t3
-    move $s2, $t4
-    
-remove_rows_outer_loop:
-    mul $s1, $s1, 124
-    addi $t8, $s1, 16
-    add $t8, $t0, $t8
-    addi $s1, $s1, 124
-    subi $t6, $s1, 16
-    add $t6, $t0, $t6      
-    beq $s1, 1, update_row_1
-     
-    
- remove_rows_inner_loop:
-    bgt $t8, $t6, exit_remove_rows_inner_loop
-    subi $t9, $t8, 128
-    lw $t9, 0($t9)
-    sw $t9, 0($t8)
-    j remove_rows_inner_loop_update
-    
-remove_rows_inner_loop_update:
-    addi $t8, $t8, 4
-    j remove_rows_inner_loop
-        
-exit_remove_rows_inner_loop:
-    subi $s1, $s1, 1
-    j remove_rows_outer_loop
-       
-update_row_1:
-    bgt $t8, $t6, exit_update_row_1
-    addi $t9, $t8, 256
-    lw $t9, 0($t9)
-    sw $t9, 0($t8)
-    j update_row_1_update
-
-update_row_1_update:
-    addi $t8, $t8, 4
-    j update_row_1
-        
-exit_update_row_1:
-    bgt $s2, 3, exit_update_row_list
-    mul $s0, $s2, 4
-    add $s0, $sp, $s0
-    lw $s3, 0($s0)
-    addi $s3, $s3, 1
-    sw $s3, 0($s0)
-    
-update_row_list:
-    addi $s2, $s2, 1
-    j exit_update_row_1 
-      
-exit_update_row_list:    
-    jr $ra                                                         
-##############################################################################                                                                         
-drop_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
-    
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
-    
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
-    
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
-    
-    jal delete_shape
-    
-    #li $v0, 4
-    #la $a0, string
+    b start
+    #li $v0, 10             # Terminate the program gracefully
     #syscall
     
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    
-    jr $ra                                                                                                                                                
-                                                                                                                                                                                                                        
-                                                                                                                                                                                                                                                                                                
- ##########################################################################                                                                                                                                                                                                                                                                                                                                                                                                                                               
-fill_color:
-    li $t2, 1            # Initialize counter (starting value)
-    lw $t6, 0($sp)       # Load base address from stack into $t6
-
-fill_loop:
-    beq $t2, 5, exit_fill_color  # Exit loop when counter equals 5
-    sw $a0, 0($t6)      # Store value in $a0 at address $t5
-
-fill_color_update:
-    mul $t3, $t2, 4     # Compute offset (4 bytes per element)
-    add $t3, $sp, $t3   # Update address in $t6
-    lw $t6, 0($t3)
-    addi $t2, $t2, 1    # Increment counter
-    j fill_loop         # Repeat loop
-
-exit_fill_color:
-    jr $ra              # Return from function
-  
-############################################################################## 
-
+##############################################################
+#FUNCTION START HERE
 delete_shape:
     li $t5, 0xE4DCD1       # gret color
     li $t7, 0xC5CCD6       # white color
@@ -1354,11 +1085,25 @@ left_update:
         
 exit_deletetion:
     jr $ra
-        
-###############################
+#############################################################                                                                                                                                                                                                                                                                                                                                                                                                                                            
+fill_color:
+    li $t2, 1            # Initialize counter (starting value)
+    lw $t6, 0($sp)       # Load base address from stack into $t6
 
-    
-###############################
+fill_loop:
+    beq $t2, 5, exit_fill_color  # Exit loop when counter equals 5
+    sw $a0, 0($t6)      # Store value in $a0 at address $t5
+
+fill_color_update:
+    mul $t3, $t2, 4     # Compute offset (4 bytes per element)
+    add $t3, $sp, $t3   # Update address in $t6
+    lw $t6, 0($t3)
+    addi $t2, $t2, 1    # Increment counter
+    j fill_loop         # Repeat loop
+
+exit_fill_color:
+    jr $ra              # Return from function
+###############################################################
 random_shape:
    li $v0, 42
    li $a0, 0
@@ -1367,13 +1112,7 @@ random_shape:
     
    move $t1, $a0 #random shape of Tetrominoes
    jr $ra
-     
-#####################################   
-
-
-#####################################
-
- ##################################################################################             
+##################################################################################             
 init_walls_board:
     li $t2, 0              # t2 = y (row index)
     li $t3, 0              # t3 = x (column index)
@@ -1421,15 +1160,5 @@ first_column:
     j Loop
 
 end_loop:
-    jr $ra
- ############################################################################################   
-game_loop:
-	# 1a. Check if key has been pressed
-    # 1b. Check which key has been pressed
-    # 2a. Check for collisions
-	# 2b. Update locations (paddle, ball)
-	# 3. Draw the screen
-	# 4. Sleep
-
-    #5. Go back to 1
-    b game_loop
+    jr $ra    
+   
