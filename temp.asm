@@ -211,14 +211,17 @@ J_shape:
 
 init_shape_done:
    jal fill_color
+   li $a2, 400
 
    #######################################################
    ###############################################################################
-keyboard:
-	li 		$v0, 32
-	li 		$a0, 1000
+speed:
+    	li 		$v0, 32
+	move 		$a0, $a2
 	syscall
 
+
+keyboard:
     lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
     lw $t8, 0($t0)                  # Load first word from keyboard
     beq $t8, 1, keyboard_input      # If first word 1, key is pressed
@@ -230,7 +233,7 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
     beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
     beq $a0, 0x64, respond_to_D
-    #beq $a0, 0x73, respond_to_S
+    beq $a0, 0x73, respond_to_S
 
     b keyboard
 
@@ -358,7 +361,7 @@ respond_to_W:
     li $t3, 0xD9A867 #U-shape
     lw $a1, 0($sp)
     lw $t4, 0($a1)
-    beq $t4, $t3, keyboard
+    beq $t4, $t3, speed
 
     li $t3, 0x003D6B  #I-shape
     beq $t4, $t3, I_shape_rot
@@ -378,6 +381,12 @@ respond_to_W:
     li $t3, 0x8D6E99
     j T_shape_rot
 
+respond_to_S:
+    addi $a2, $a2, -100
+    bge $a2, 100, Auto_drop
+    addi $a2, $a2, 100
+    j Auto_drop
+    
 Terminate:
     li $v0, 10             # Terminate the program gracefully
     syscall    
@@ -911,7 +920,7 @@ base_1_update:
     move $a0, $t3
     
     jal fill_color
-    j keyboard
+    j speed
     
 base_1_exit_drop:
     addi $sp, $sp, 16         
@@ -960,7 +969,7 @@ base_2_update:
     move $a0, $t3
     
     jal fill_color
-    j keyboard
+    j speed
     
 base_2_exit_drop:
     addi $sp, $sp, 16         
@@ -1021,7 +1030,7 @@ base_3_update:
     move $a0, $t3
     
     jal fill_color
-    j keyboard
+    j speed
 
     
 base_3_exit_drop:
@@ -1092,7 +1101,7 @@ base_4_update:
     move $a0, $t3
     
     jal fill_color
-    j keyboard
+    j speed
     
 base_4_exit_drop:
     addi $sp, $sp, 16         
