@@ -45,6 +45,7 @@ string: .asciiz "right loop is ran\n"
 counter: .asciiz "current counter is "
 newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
+row_to_delete: .word 0    # Create an array with 4 numbers
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -80,7 +81,7 @@ start:
 
 ##########################################################
 init_shape: 
-   #li $t1, 3  
+   li $t1, 0  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -894,7 +895,7 @@ base_1_drop:
     j base_1_update
     
 base_1_further_check1:
-    bne $t1, $t7, base_1_exit_drop 
+    bne $t1, $t7, exit_drop 
 
 base_1_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -922,13 +923,6 @@ base_1_update:
     jal fill_color
     j speed
     
-base_1_exit_drop:
-    jal calculate_row
-    addi $sp, $sp, 16
-    jal sorted_rows
-    jal remove_duplicate
-    addi $s0, $s0, 16                      
-    b start
     
 ######################################
 base_2_drop:
@@ -940,12 +934,12 @@ base_2_drop:
     j base_2_update
     
 base_2_further_check1:
-    bne $t1, $t7, base_2_exit_drop   
+    bne $t1, $t7, exit_drop   
     bne $t2, $t5, base_2_further_check3
     j base_2_update
     
 base_2_further_check3:    
-    bne $t2, $t7, base_2_exit_drop
+    bne $t2, $t7, exit_drop
     
 base_2_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -974,13 +968,6 @@ base_2_update:
     jal fill_color
     j speed
     
-base_2_exit_drop:
-    jal calculate_row
-    addi $sp, $sp, 16
-    jal sorted_rows
-    jal remove_duplicate
-    addi $s0, $s0, 16                       
-    b start
                                                                                                                                                                                   
 #########################################
 
@@ -995,21 +982,21 @@ base_3_drop:
     j base_3_further_check2
     
 base_3_further_check1:
-    bne $t1, $t7, base_3_exit_drop
+    bne $t1, $t7, exit_drop
     
 base_3_further_check2:       
     bne $t2, $t5, base_3_further_check3
     j base_3_further_check4
     
 base_3_further_check3:    
-    bne $t2, $t7, base_3_exit_drop
+    bne $t2, $t7, exit_drop
     
 base_3_further_check4:           
     bne $t3, $t5, base_3_further_check5
     j base_3_update
     
 base_3_further_check5:    
-    bne $t3, $t7, base_3_exit_drop
+    bne $t3, $t7, exit_drop
     
 base_3_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -1037,17 +1024,7 @@ base_3_update:
     
     jal fill_color
     j speed
-
-    
-base_3_exit_drop:
-    jal calculate_row
-    addi $sp, $sp, 16
-    jal sorted_rows
-    jal remove_duplicate
-    addi $s0, $s0, 16                       
-    b start
-    #li $v0, 10             # Terminate the program gracefully
-    #syscall                                                                                                
+                                                                                              
 #########################################  
 base_4_drop:
     addi $v1, $v1, 128
@@ -1062,28 +1039,28 @@ base_4_drop:
     j base_4_further_check2
     
 base_4_further_check1:
-    bne $t1, $t7, base_4_exit_drop
+    bne $t1, $t7, exit_drop
     
 base_4_further_check2:       
     bne $t2, $t5, base_4_further_check3
     j base_4_further_check4
     
 base_4_further_check3:    
-    bne $t2, $t7, base_4_exit_drop
+    bne $t2, $t7, exit_drop
     
 base_4_further_check4:           
     bne $t3, $t5, base_4_further_check5
     j base_4_further_check6
     
 base_4_further_check5:    
-    bne $t3, $t7, base_4_exit_drop
+    bne $t3, $t7, exit_drop
     
 base_4_further_check6:           
     bne $t4, $t5, base_4_further_check7
     j base_4_update
     
 base_4_further_check7:    
-    bne $t4, $t7, base_4_exit_drop    
+    bne $t4, $t7, exit_drop    
     
 base_4_update:
     lw $s0, 0($sp)      # Store address at 0($sp)
@@ -1112,19 +1089,112 @@ base_4_update:
     jal fill_color
     j speed
     
-base_4_exit_drop:
+exit_drop:
     jal calculate_row
     addi $sp, $sp, 16
     jal sorted_rows
     jal remove_duplicate
-    addi $s0, $s0, 16                       
-    b start
+    la $s0, numbers
+    addi $s0, $s0, 16
+    la $s7, row_to_delete
+    
+check_row_loop:
+    beq $t4, 0, start   
+    lw $a1, 0($sp)
+    jal Row_check
+    addi $sp, $sp, 4
+    subi $t4, $t4, 1
+    
+    lw $a1, 0($s7)                                               
+    beq $a1, -1, Terminate_program
+    beq $a1, 0, check_row_loop
+    
+    li $a1, 0
+    sw $a1, 0($s7)
+    j check_row_loop
+
+Terminate_program:
+    addi $s7, $s7, 4
+    mul $t4, $t4, 4
+    add $sp, $sp, $t4
+    j Terminate         
+    
     #li $v0, 10             # Terminate the program gracefully
     #syscall
     
 ##############################################################
 #FUNCTION START HERE
 ##############################################################################
+
+#########################################
+Row_check:
+    lw $t0, ADDR_DSPL
+    move $t6, $a1 # assume we have the row number in $a1
+    la $s7, row_to_delete
+    
+    mul $t6, $t6, 124
+    addi $t6, $t6, 16
+    add $t6, $t0, $t6
+    lw $t9, 0($t6)
+    
+    addi $t8, $t6, 108
+    
+
+    li $t5, 0xE4DCD1       # grey color
+    li $t7, 0xC5CCD6       # white color
+    
+    blt $a1, 5, End_game  #If the row is less than 5, we end the game
+    
+check_rows_inner_loop:
+    bgt $t6, $t8, Full
+    beq $t9, $t5, Not_full
+    
+further_check_row_color: 
+    beq $t9, $t7, Not_full
+    
+check_rows_inner_loop_update:
+    addi $t6, $t6, 4
+    j check_rows_inner_loop
+    
+Not_full:
+    lw $a1, 0($s7)
+    li $v0, 1
+    move $a0, $a1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    
+    jr $ra
+    
+Full:
+    la $s7, row_to_delete
+    sw $a1, 0($s7)
+    
+    li $v0, 1
+    move $a0, $a1
+    syscall
+    
+    jr $ra
+    
+End_game:
+    li $t6, -1
+    sw $t6, 0($s7)
+    
+    lw $a1, 0($s7)
+    li $v0, 1
+    move $a0, $a1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    jr $ra           
+#########################################  
+
 ##############################################################################
 sorted_rows:
     la $s7, numbers                # Load address of numbers into $s7
@@ -1177,41 +1247,41 @@ final:
     sw $a0, 8($s7)
     sw $a1, 4($s7)
     
-    lw $a0, 0($s7)
+    #lw $a0, 0($s7)
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
-    lw $a0, 4($s7)
+    #lw $a0, 4($s7)
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
-    lw $a0, 8($s7)
+    #lw $a0, 8($s7)
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
-    lw $a0, 12($s7)
+    #lw $a0, 12($s7)
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall  
+    #li $v0, 4
+    #la $a0, newline
+    #syscall  
       
     jr $ra                     # Make the syscall to exit the program
 
@@ -1234,7 +1304,7 @@ check_loop:
     li $v0, 1
     move $a0, $v1
     syscall
-    
+   
     li $v0, 4
     la $a0, newline
     syscall
@@ -1265,8 +1335,8 @@ exit_duplicate_loop:
     la $a0, newline
     syscall
     
-    mul $t4, $t4, 4
-    add $sp, $sp, $t4
+    #mul $t4, $t4, 4
+    #add $sp, $sp, $t4
     
     jr $ra                                                                     
 ##############################################################################
@@ -1274,59 +1344,70 @@ exit_duplicate_loop:
 calculate_row:
     lw $t0, ADDR_DSPL
     la $s0, numbers
-    li $t1, 124
+    li $t1, 128
      
     lw $a0, 0($sp)
     sub $a0, $a0, $t0    #calculate address
+    
+    li $v0, 1
+    syscall
+    
     div $a0, $t1
     mflo $a0
     
-    #li $v0, 1
-    #syscall
+    li $v0, 1
+    syscall
     
     sw $a0, 0($s0)
     
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+    li $v0, 4
+    la $a0, newline
+    syscall
     
     lw $a0, 4($sp)
     sub $a0, $a0, $t0    #calculate address
+    li $v0, 1
+    syscall
+    
     div $a0, $t1
     mflo $a0
     
-    #li $v0, 1
-    #syscall
+    li $v0, 1
+    syscall
     sw $a0, 4($s0)
     
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+    li $v0, 4
+    la $a0, newline
+    syscall
     
     lw $a0, 8($sp)
     sub $a0, $a0, $t0    #calculate address
+    li $v0, 1
+    syscall
     div $a0, $t1
     mflo $a0
     
-    #li $v0, 1
-    #syscall
+    li $v0, 1
+    syscall
     sw $a0, 8($s0)
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+    li $v0, 4
+    la $a0, newline
+    syscall
     
     lw $a0, 12($sp)
     sub $a0, $a0, $t0    #calculate address
+    li $v0, 1
+    syscall
     div $a0, $t1
     mflo $a0
     
-    #li $v0, 1
-    #syscall
+    li $v0, 1
+    syscall
     sw $a0, 12($s0)
     
-    #li $v0, 4
-    #la $a0, newline
-    #syscall    
+    li $v0, 4
+    la $a0, newline
+    syscall    
     
     
     jr $ra
