@@ -1101,11 +1101,19 @@ exit_drop:
 check_row_loop:
     beq $t4, 0, start   
     lw $a1, 0($sp)
+    li $v0, 1
+    move $a0, $a1
+    syscall
+    
     jal Row_check
     addi $sp, $sp, 4
     subi $t4, $t4, 1
     
-    lw $a1, 0($s7)                                               
+    lw $a1, 0($s7)
+    li $v0, 1
+    move $a0, $a1
+    syscall
+                                                   
     beq $a1, -1, Terminate_program
     beq $a1, 0, check_row_loop
     
@@ -1132,12 +1140,12 @@ Row_check:
     move $t6, $a1 # assume we have the row number in $a1
     la $s7, row_to_delete
     
-    mul $t6, $t6, 124
-    addi $t6, $t6, 16
+    mul $t6, $t6, 128
+    addi $t6, $t6, 12
     add $t6, $t0, $t6
     lw $t9, 0($t6)
     
-    addi $t8, $t6, 108
+    addi $t8, $t6, 100
     
 
     li $t5, 0xE4DCD1       # grey color
@@ -1146,6 +1154,7 @@ Row_check:
     blt $a1, 5, End_game  #If the row is less than 5, we end the game
     
 check_rows_inner_loop:
+    lw $t9, 0($t6)
     bgt $t6, $t8, Full
     beq $t9, $t5, Not_full
     
@@ -1157,14 +1166,14 @@ check_rows_inner_loop_update:
     j check_rows_inner_loop
     
 Not_full:
-    lw $a1, 0($s7)
-    li $v0, 1
-    move $a0, $a1
-    syscall
+    #lw $a1, 0($s7)
+    #li $v0, 1
+    #move $a0, $a1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     
     jr $ra
@@ -1173,9 +1182,9 @@ Full:
     la $s7, row_to_delete
     sw $a1, 0($s7)
     
-    li $v0, 1
-    move $a0, $a1
-    syscall
+    #li $v0, 1
+    #move $a0, $a1
+    #syscall
     
     jr $ra
     
@@ -1183,14 +1192,14 @@ End_game:
     li $t6, -1
     sw $t6, 0($s7)
     
-    lw $a1, 0($s7)
-    li $v0, 1
-    move $a0, $a1
-    syscall
+    #lw $a1, 0($s7)
+    #li $v0, 1
+    #move $a0, $a1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     jr $ra           
 #########################################  
