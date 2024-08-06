@@ -216,7 +216,7 @@ init_shape_done:
    ###############################################################################
 keyboard:
 	li 		$v0, 32
-	li 		$a0, 600
+	li 		$a0, 1000
 	syscall
 
     lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
@@ -296,13 +296,49 @@ left_movement_update:
 
 respond_to_D:
     li $t9, 0x8A8F9A       # wall
-    
+    li $t5, 0xE4DCD1       # grey color
+    li $t7, 0xC5CCD6       # white color
     lw $a1, 12($sp)
-    addi $s1, $a1, 4
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-   
+    lw $s0, 0($sp)
+    lw $s4, 4($sp)
+    lw $s2, 8($sp)
+    lw $s3, 12($sp)
+    li $t2, 2
     
+check_right_obstacle:
+    beq $t2, -1, right_movement_update    
+    addi $s1, $a1, 4
+    bne $s1, $s0, check_second_right
+    j check_right_obstacle_update
+    
+check_second_right:
+    bne $s1, $s4, check_third_right
+    j check_right_obstacle_update
+    
+check_third_right:
+    bne $s1, $s2, check_fourth_right
+    j check_right_obstacle_update
+    
+check_fourth_right:
+    bne $s1, $s3, check_right_color
+    j check_right_obstacle_update
+    
+check_right_color:                    
+    lw $t4, 0($s1)
+    bne $t4, $t5, right_move_further_check
+    j check_right_obstacle_update
+    
+right_move_further_check:   
+    bne $t4, $t7, Auto_drop    # check left most touches the wall
+
+check_right_obstacle_update:
+    mul $s1, $t2, 4
+    add $a1, $sp, $s1
+    subi $t2, $t2, 1
+    lw $a1, 0($a1)
+    j check_right_obstacle   
+
+right_movement_update:  
     lw $s0, 0($sp)      # Store address at 0($sp)
     lw $t3, 0($s0)      # store color
     addi $s0, $s0, 4    # move left
