@@ -702,8 +702,8 @@ U_shape_drop:
 I_shape_drop:
     lw $a1, 0($sp)
     addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, I_pos_1_drop
+    lw $t4, 4($sp)
+    beq $t4, $s1, I_pos_1_drop
     j I_pos_2_drop
     
 I_pos_1_drop:    
@@ -722,8 +722,8 @@ I_pos_2_drop:
 S_shape_drop:
     lw $a1, 0($sp)
     addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, S_pos_2_drop
+    lw $t4, 4($sp)
+    beq $t4, $s1, S_pos_2_drop
     
 S_pos_1_drop:    
     lw $v0, 0($sp)      # Store address at 0($sp)
@@ -741,16 +741,15 @@ S_pos_2_drop:
 Z_shape_drop:
     lw $a1, 0($sp)
     addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, Z_pos_2_drop
+    lw $t4, 4($sp)
+    beq $t4, $s1, Z_pos_2_drop
     
 Z_pos_1_drop:    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp)              
     lw $s5, 12($sp)
     j base_3_drop              
- 
-    
+   
                               
 Z_pos_2_drop:    
     lw $v1, 4($sp)      # Store address at 0($sp)
@@ -761,19 +760,19 @@ Z_pos_2_drop:
 
 L_shape_drop:
     lw $a1, 0($sp)
-    addi $s1, $a1, 128     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, L_pos_1_2_drop
+    addi $s1, $a1, 128
+    lw $t4, 4($sp)
+    beq $t4, $s1, L_pos_1_2_drop
     
     addi $s1, $a1, 132     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, L_pos_3_drop
+    lw $t4, 8($sp)
+    beq $t4, $s1, L_pos_3_drop
     j L_pos_4_drop
     
 L_pos_1_2_drop:
     addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, L_pos_2_drop
+    lw $t4, 8($sp)
+    beq $t4, $s1, L_pos_2_drop
     j L_pos_1_drop
     
 L_pos_1_drop:
@@ -806,18 +805,18 @@ L_pos_4_drop:
 J_shape_drop:
     lw $a1, 0($sp)
     addi $s1, $a1, 128     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_2_3_drop
+    lw $t4, 4($sp)
+    beq $t4, $s1, J_pos_2_3_drop
     
     addi $s1, $a1, 136     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_4_drop
+    lw $t4, 12($sp)
+    beq $t4, $s1, J_pos_4_drop
     j J_pos_1_drop
     
 J_pos_2_3_drop:
     addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_3_drop
+    lw $t4, 12($sp)
+    beq $t4, $s1, J_pos_3_drop
     j J_pos_2_drop
     
 J_pos_1_drop:
@@ -849,18 +848,19 @@ J_pos_4_drop:
 T_shape_drop:
     li $t9, 0x8A8F9A       # wall
     lw $a1, 0($sp)
-    addi $s1, $a1, 132     # check if right down is still part of tetris
-    lw $t4, 0($s1)
-    bne $t4, $t3, T_pos_3_drop
     
-    addi $s1, $a1, 4     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    bne $t4, $t3, T_pos_4_drop
+    addi $s1, $a1, 128     # check if right is still part of tetris
+    lw $t4, 4($sp)
+    bne $t4, $s1, T_pos_4_drop
     
-    addi $s1, $a1, 8     # check if right is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, T_pos_1_drop
-    j T_pos_2_drop
+    addi $s1, $a1, 4     # check if right down is still part of tetris
+    lw $t4, 4($sp)
+    bne $t4, $s1, T_pos_1_drop
+    
+    addi $s1, $a1, 132     # check if right is still part of tetris
+    lw $t4, 12($sp)
+    beq $t4, $s1, T_pos_2_drop
+    j T_pos_3_drop
     
 T_pos_1_drop:
     lw $v0, 0($sp)      # Store address at 0($sp)
@@ -886,8 +886,7 @@ T_pos_4_drop:
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
-  
-             
+          
 ########################################
 base_1_drop:
     addi $v1, $v1, 128
