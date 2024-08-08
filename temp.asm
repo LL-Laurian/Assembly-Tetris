@@ -1115,7 +1115,7 @@ check_row_loop:
     jal Row_check
     addi $sp, $sp, 4
     subi $t4, $t4, 1
-    
+    la $s7, row_to_delete
     lw $a1, 0($s7)
     
     li $v0, 1
@@ -1163,6 +1163,17 @@ Delete_row:
     la $s7, row_to_delete
     lw $s7, 0($s7)
     
+    #li $v0, 1
+    #move $a0, $s5
+    #syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
+    
+    #li $v0, 1
+    #move $a0, $s7
+    #syscall
+    
     mul $t6, $s7, 128
     addi $t6, $t6, 12
     add $t6, $t0, $t6
@@ -1170,7 +1181,7 @@ Delete_row:
     addi $t8, $t6, 100
 
 Delete_row_outer_loop:
-    bgt $s7, $s5, exit_delete_row
+    bgt $s5, $s7, exit_delete_row
     
 Delete_row_inner_loop:        
     subi $t9, $t6, 128
@@ -1321,12 +1332,12 @@ final:
 update_max_row:
     sw $a0, 0($a1)
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
 update_final: 
     lw $a0, 0($s7)           
