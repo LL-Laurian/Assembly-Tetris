@@ -109,7 +109,7 @@ start:
 ##########################################################
 
 init_shape: 
-    li $t1, 5
+    #li $t1, 5
     beq $t1, 0, U_shape    # Branch to U_shape if $t1 is 0
     beq $t1, 1, I_shape    # Branch to I_shape if $t1 is 1
     beq $t1, 2, S_shape    # Branch to S_shape if $t1 is 2
@@ -803,653 +803,644 @@ Auto_drop:
     li $t3, 0x8D6E99
     j T_shape_drop    
 ###############################################################################
-#DROP/COLLISION
+# DROP/COLLISION HANDLING
 
 U_shape_drop:   
-    lw $v0, 4($sp)
-    lw $v1, 12($sp)
-    j base_2_drop                
+    lw $v0, 4($sp)         # Load value from stack address for U-shape drop handling
+    lw $v1, 12($sp)        # Load another value from stack address for U-shape drop handling
+    j base_2_drop          # Jump to base_2_drop for further processing
+
 #################################
-    
+
+# I-shape drop handling
 I_shape_drop:
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 4($sp)
-    beq $t4, $s1, I_pos_1_drop
-    j I_pos_2_drop
-    
+    lw $a1, 0($sp)         # Load the address of the I-shape from the stack
+    addi $s1, $a1, 128     # Calculate the address to check if below the shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, I_pos_1_drop # If value matches, go to I_pos_1_drop
+    j I_pos_2_drop        # Otherwise, go to I_pos_2_drop
+
 I_pos_1_drop:    
-    lw $v1, 12($sp)
-    j base_1_drop 
-                               
+    lw $v1, 12($sp)        # Load value from stack for position 1 drop handling
+    j base_1_drop         # Jump to base_1_drop for further processing
+
 I_pos_2_drop:    
-    lw $v0, 0($sp)
-    lw $v1, 4($sp)
-    lw $s5, 8($sp)
-    lw $s6, 12($sp)
-    j base_4_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 2 drop handling
+    lw $v1, 4($sp)         # Load another value from stack for position 2 drop handling
+    lw $s5, 8($sp)         # Load another value from stack for position 2 drop handling
+    lw $s6, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_4_drop         # Jump to base_4_drop for further processing
 
 ######################################
 
+# S-shape drop handling
 S_shape_drop:
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 4($sp)
-    beq $t4, $s1, S_pos_2_drop
+    lw $a1, 0($sp)         # Load the address of the S-shape from the stack
+    addi $s1, $a1, 128     # Calculate address to check if below the shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, S_pos_2_drop # If value matches, go to S_pos_2_drop
     
 S_pos_1_drop:    
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp)              
-    lw $s5, 12($sp)
-    j base_3_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 1 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 1 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 1 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
 
-                            
 S_pos_2_drop:    
-    lw $v0, 4($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop  
+    lw $v0, 4($sp)         # Load value from stack for position 2 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
 
 ######################################### 
+
+# Z-shape drop handling
 Z_shape_drop:
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 4($sp)
-    beq $t4, $s1, Z_pos_2_drop
+    lw $a1, 0($sp)         # Load the address of the Z-shape from the stack
+    addi $s1, $a1, 128     # Calculate address to check if below the shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, Z_pos_2_drop # If value matches, go to Z_pos_2_drop
     
 Z_pos_1_drop:    
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp)              
-    lw $s5, 12($sp)
-    j base_3_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 1 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 1 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 1 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
    
-                              
 Z_pos_2_drop:    
-    lw $v1, 4($sp)      # Store address at 0($sp)
-    lw $v0, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop
-    
+    lw $v1, 4($sp)         # Load value from stack for position 2 drop handling
+    lw $v0, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
+
 ##########################################
 
+# L-shape drop handling
 L_shape_drop:
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 4($sp)
-    beq $t4, $s1, L_pos_1_2_drop
-    
-    addi $s1, $a1, 132     # check if below is still part of tetris
-    lw $t4, 8($sp)
-    beq $t4, $s1, L_pos_3_drop
-    j L_pos_4_drop
-    
-L_pos_1_2_drop:
-    addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 8($sp)
-    beq $t4, $s1, L_pos_2_drop
-    j L_pos_1_drop
-    
-L_pos_1_drop:
-    lw $v0, 8($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
-             
-                      
-L_pos_2_drop:   
-    lw $v0, 4($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
- 
-L_pos_3_drop:
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
+    lw $a1, 0($sp)         # Load the address of the L-shape from the stack
+    addi $s1, $a1, 128     # Calculate address to check if below the shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, L_pos_1_2_drop # If value matches, go to L_pos_1_2_drop
 
+    addi $s1, $a1, 132     # Calculate another address to check if below the shape is valid
+    lw $t4, 8($sp)         # Load value from stack for comparison
+    beq $t4, $s1, L_pos_3_drop # If value matches, go to L_pos_3_drop
+    j L_pos_4_drop        # Otherwise, go to L_pos_4_drop
+
+L_pos_1_2_drop:
+    addi $s1, $a1, 4       # Calculate address to check if right side of shape is valid
+    lw $t4, 8($sp)         # Load value from stack for comparison
+    beq $t4, $s1, L_pos_2_drop # If value matches, go to L_pos_2_drop
+    j L_pos_1_drop        # Otherwise, go to L_pos_1_drop
+
+L_pos_1_drop:
+    lw $v0, 8($sp)         # Load value from stack for position 1 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 1 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
+
+L_pos_2_drop:   
+    lw $v0, 4($sp)         # Load value from stack for position 2 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 2 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
+
+L_pos_3_drop:
+    lw $v0, 0($sp)         # Load value from stack for position 3 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 3 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
 
 L_pos_4_drop:   
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 4($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 4 drop handling
+    lw $v1, 4($sp)         # Load another value from stack for position 4 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 4 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
 
      
 ##########################################
-
+# J-shape drop handling
 J_shape_drop:
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128     # check if below is still part of tetris
-    lw $t4, 4($sp)
-    beq $t4, $s1, J_pos_2_3_drop
+    lw $a1, 0($sp)         # Load the address of the J-shape from the stack
+    addi $s1, $a1, 128     # Calculate address to check if below the shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, J_pos_2_3_drop # If value matches, go to J_pos_2_3_drop
     
-    addi $s1, $a1, 136     # check if below is still part of tetris
-    lw $t4, 12($sp)
-    beq $t4, $s1, J_pos_4_drop
-    j J_pos_1_drop
-    
-J_pos_2_3_drop:
-    addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 12($sp)
-    beq $t4, $s1, J_pos_3_drop
-    j J_pos_2_drop
-    
-J_pos_1_drop:
-    li $v0, 11
-    li $a0, 'a'
-    syscall
-    
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
+    addi $s1, $a1, 136     # Calculate another address to check if below the shape is valid
+    lw $t4, 12($sp)        # Load value from stack for comparison
+    beq $t4, $s1, J_pos_4_drop # If value matches, go to J_pos_4_drop
+    j J_pos_1_drop        # Otherwise, go to J_pos_1_drop
 
-                              
+J_pos_2_3_drop:
+    addi $s1, $a1, 4       # Calculate address to check if right side of shape is valid
+    lw $t4, 12($sp)        # Load value from stack for comparison
+    beq $t4, $s1, J_pos_3_drop # If value matches, go to J_pos_3_drop
+    j J_pos_2_drop        # Otherwise, go to J_pos_2_drop
+
+J_pos_1_drop: 
+    lw $v0, 0($sp)         # Load value from stack for position 1 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 1 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
+
 J_pos_2_drop:   
-    lw $v0, 4($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
-    
+    lw $v0, 4($sp)         # Load value from stack for position 2 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 2 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
+
 J_pos_3_drop:
-    lw $v0, 8($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
+    lw $v0, 8($sp)         # Load value from stack for position 3 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 3 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
 
 J_pos_4_drop:   
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 4($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 4 drop handling
+    lw $v1, 4($sp)         # Load another value from stack for position 4 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 4 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
 
-    
 ##########################################
 
+# T-shape drop handling
 T_shape_drop:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
+    li $t9, 0x8A8F9A       # Load wall identifier
+    lw $a1, 0($sp)         # Load the address of the T-shape from the stack
     
-    addi $s1, $a1, 256     # check if right is still part of tetris
-    lw $t4, 8($sp)
-    beq $t4, $s1, T_pos_4_drop
+    addi $s1, $a1, 256     # Calculate address to check if right side of shape is valid
+    lw $t4, 8($sp)         # Load value from stack for comparison
+    beq $t4, $s1, T_pos_4_drop # If value matches, go to T_pos_4_drop
     
-    addi $s1, $a1, 4     # check if right down is still part of tetris
-    lw $t4, 4($sp)
-    beq $t4, $s1, T_pos_1_drop
+    addi $s1, $a1, 4       # Calculate address to check if right down of shape is valid
+    lw $t4, 4($sp)         # Load value from stack for comparison
+    beq $t4, $s1, T_pos_1_drop # If value matches, go to T_pos_1_drop
     
-    addi $s1, $a1, 132     # check if right is still part of tetris
-    lw $t4, 12($sp)
-    beq $t4, $s1, T_pos_2_drop
-    j T_pos_3_drop
-    
+    addi $s1, $a1, 132     # Calculate address to check if right side of shape is valid
+    lw $t4, 12($sp)        # Load value from stack for comparison
+    beq $t4, $s1, T_pos_2_drop # If value matches, go to T_pos_2_drop
+    j T_pos_3_drop        # Otherwise, go to T_pos_3_drop
+
 T_pos_1_drop:
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 1 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 1 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 1 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
    
-                            
 T_pos_2_drop:
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
+    lw $v0, 0($sp)         # Load value from stack for position 2 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 2 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
 
-      
 T_pos_3_drop:
+    lw $v0, 0($sp)         # Load value from stack for position 3 drop handling
+    lw $v1, 8($sp)         # Load another value from stack for position 3 drop handling
+    lw $s5, 12($sp)        # Load another value from stack for position 3 drop handling
+    j base_3_drop         # Jump to base_3_drop for further processing
 
-    lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 8($sp)      # Store address at 0($sp) 
-    lw $s5, 12($sp)      # Store address at 0($sp)                
-    j base_3_drop              
-
-    
 T_pos_4_drop:
-    lw $v0, 8($sp)      # Store address at 0($sp)
-    lw $v1, 12($sp)      # Store address at 0($sp)              
-    j base_2_drop              
-          
+    lw $v0, 8($sp)         # Load value from stack for position 4 drop handling
+    lw $v1, 12($sp)        # Load another value from stack for position 4 drop handling
+    j base_2_drop         # Jump to base_2_drop for further processing
+
 ########################################
 base_1_drop:
-    addi $v1, $v1, 128
-    lw $t1, 0($v1)
-    bne $t1, $t5, base_1_further_check1
-    j base_1_update
-    
+    addi $v1, $v1, 128        # Increment $v1 to point to the next row in the display
+    lw $t1, 0($v1)           # Load value from the new position in $v1 into $t1
+    bne $t1, $t5, base_1_further_check1 # If $t1 is not equal to $t5, jump to further check
+    j base_1_update           # Otherwise, jump to base_1_update
+
 base_1_further_check1:
-    bne $t1, $t7, exit_drop 
+    bne $t1, $t7, exit_drop  # If $t1 is not equal to $t7, jump to exit_drop
 
 base_1_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
+    lw $s0, 0($sp)           # Load address from stack position 0 into $s0
+    lw $t3, 0($s0)           # Load color from the address in $s0 into $t3
+    addi $s0, $s0, 128       # Move the address in $s0 down by 128 bytes
     
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
+    lw $s4, 4($sp)           # Load address from stack position 4 into $s4
+    addi $s4, $s4, 128       # Move the address in $s4 down by 128 bytes
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
+    lw $s2, 8($sp)           # Load address from stack position 8 into $s2
+    addi $s2, $s2, 128       # Move the address in $s2 down by 128 bytes
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
+    lw $s3, 12($sp)          # Load address from stack position 12 into $s3
+    addi $s3, $s3, 128       # Move the address in $s3 down by 128 bytes
     
-    jal delete_shape
+    jal delete_shape         # Call delete_shape subroutine to remove the shape
     
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
+    subi $sp, $sp, 16        # Allocate 16 bytes on the stack for saving state
+    sw $s0, 0($sp)           # Save $s0 (address) on the stack
+    sw $s4, 4($sp)           # Save $s4 (address) on the stack
+    sw $s2, 8($sp)           # Save $s2 (address) on the stack
+    sw $s3, 12($sp)          # Save $s3 (address) on the stack
+    move $a0, $t3            # Move color into $a0 for use by fill_color
     
-    jal fill_color
-    j speed
-    
-    
+    jal fill_color           # Call fill_color subroutine to update the display with color
+    j speed                  # Jump to speed for the next operation
+
 ######################################
 base_2_drop:
-    addi $v1, $v1, 128
-    addi $v0, $v0, 128
-    lw $t1, 0($v1)
-    lw $t2, 0($v0)
-    bne $t1, $t5, base_2_further_check1
-    j base_2_further_check2
-    
+    addi $v1, $v1, 128        # Increment $v1 to point to the next row in the display
+    addi $v0, $v0, 128        # Increment $v0 to point to the next row in the display
+    lw $t1, 0($v1)           # Load value from the new position in $v1 into $t1
+    lw $t2, 0($v0)           # Load value from the new position in $v0 into $t2
+    bne $t1, $t5, base_2_further_check1 # If $t1 is not equal to $t5, jump to further check
+    j base_2_further_check2  # Otherwise, jump to base_2_further_check2
+
 base_2_further_check1:
-    bne $t1, $t7, exit_drop   
-    
+    bne $t1, $t7, exit_drop  # If $t1 is not equal to $t7, jump to exit_drop   
+
 base_2_further_check2:    
-    bne $t2, $t5, base_2_further_check3
-    j base_2_update
-    
+    bne $t2, $t5, base_2_further_check3 # If $t2 is not equal to $t5, jump to further check
+    j base_2_update          # Otherwise, jump to base_2_update
+
 base_2_further_check3:    
-    bne $t2, $t7, exit_drop
-    
+    bne $t2, $t7, exit_drop  # If $t2 is not equal to $t7, jump to exit_drop
+
 base_2_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
+    lw $s0, 0($sp)           # Load address from stack position 0 into $s0
+    lw $t3, 0($s0)           # Load color from the address in $s0 into $t3
+    addi $s0, $s0, 128       # Move the address in $s0 down by 128 bytes
     
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
+    lw $s4, 4($sp)           # Load address from stack position 4 into $s4
+    addi $s4, $s4, 128       # Move the address in $s4 down by 128 bytes
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
+    lw $s2, 8($sp)           # Load address from stack position 8 into $s2
+    addi $s2, $s2, 128       # Move the address in $s2 down by 128 bytes
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
+    lw $s3, 12($sp)          # Load address from stack position 12 into $s3
+    addi $s3, $s3, 128       # Move the address in $s3 down by 128 bytes
     
-    jal delete_shape
+    jal delete_shape         # Call delete_shape subroutine to remove the shape
     
+    subi $sp, $sp, 16        # Allocate 16 bytes on the stack for saving state
+    sw $s0, 0($sp)           # Save $s0 (address) on the stack
+    sw $s4, 4($sp)           # Save $s4 (address) on the stack
+    sw $s2, 8($sp)           # Save $s2 (address) on the stack
+    sw $s3, 12($sp)          # Save $s3 (address) on the stack
+    move $a0, $t3            # Move color into $a0 for use by fill_color
     
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    j speed
+    jal fill_color           # Call fill_color subroutine to update the display with color
+    j speed                  # Jump to speed for the next operation
     
                                                                                                                                                                                   
 #########################################
-
 base_3_drop:
-    addi $v1, $v1, 128
-    addi $v0, $v0, 128
-    addi $s5, $s5, 128
-    lw $t1, 0($v1)
-    lw $t2, 0($v0)
-    lw $t3, 0($s5)
-    bne $t1, $t5, base_3_further_check1
-    j base_3_further_check2
+    addi $v1, $v1, 128        # Increment $v1 to point to the next row in the display
+    addi $v0, $v0, 128        # Increment $v0 to point to the next row in the display
+    addi $s5, $s5, 128        # Increment $s5 to point to the next row in the display
+    lw $t1, 0($v1)           # Load value from the new position in $v1 into $t1
+    lw $t2, 0($v0)           # Load value from the new position in $v0 into $t2
+    lw $t3, 0($s5)           # Load value from the new position in $s5 into $t3
+    bne $t1, $t5, base_3_further_check1 # If $t1 is not equal to $t5, jump to further check
+    j base_3_further_check2  # Otherwise, jump to base_3_further_check2
     
 base_3_further_check1:
-    bne $t1, $t7, exit_drop
+    bne $t1, $t7, exit_drop  # If $t1 is not equal to $t7, jump to exit_drop
     
 base_3_further_check2:       
-    bne $t2, $t5, base_3_further_check3
-    j base_3_further_check4
+    bne $t2, $t5, base_3_further_check3 # If $t2 is not equal to $t5, jump to further check
+    j base_3_further_check4  # Otherwise, jump to base_3_further_check4
     
 base_3_further_check3:    
-    bne $t2, $t7, exit_drop
+    bne $t2, $t7, exit_drop  # If $t2 is not equal to $t7, jump to exit_drop
     
 base_3_further_check4:           
-    bne $t3, $t5, base_3_further_check5
-    j base_3_update
+    bne $t3, $t5, base_3_further_check5 # If $t3 is not equal to $t5, jump to further check
+    j base_3_update          # Otherwise, jump to base_3_update
     
 base_3_further_check5:    
-    bne $t3, $t7, exit_drop
+    bne $t3, $t7, exit_drop  # If $t3 is not equal to $t7, jump to exit_drop
     
 base_3_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
+    lw $s0, 0($sp)           # Load address from stack position 0 into $s0
+    lw $t3, 0($s0)           # Load color from the address in $s0 into $t3
+    addi $s0, $s0, 128       # Move the address in $s0 down by 128 bytes
     
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
+    lw $s4, 4($sp)           # Load address from stack position 4 into $s4
+    addi $s4, $s4, 128       # Move the address in $s4 down by 128 bytes
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
+    lw $s2, 8($sp)           # Load address from stack position 8 into $s2
+    addi $s2, $s2, 128       # Move the address in $s2 down by 128 bytes
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
+    lw $s3, 12($sp)          # Load address from stack position 12 into $s3
+    addi $s3, $s3, 128       # Move the address in $s3 down by 128 bytes
     
-    jal delete_shape
+    jal delete_shape         # Call delete_shape subroutine to remove the shape
     
+    subi $sp, $sp, 16        # Allocate 16 bytes on the stack for saving state
+    sw $s0, 0($sp)           # Save $s0 (address) on the stack
+    sw $s4, 4($sp)           # Save $s4 (address) on the stack
+    sw $s2, 8($sp)           # Save $s2 (address) on the stack
+    sw $s3, 12($sp)          # Save $s3 (address) on the stack
+    move $a0, $t3            # Move color into $a0 for use by fill_color
     
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    j speed
+    jal fill_color           # Call fill_color subroutine to update the display with color
+    j speed                  # Jump to speed for the next operation
                                                                                               
 #########################################  
 base_4_drop:
-    addi $v1, $v1, 128
-    addi $v0, $v0, 128
-    addi $s5, $s5, 128
-    addi $s6, $s6, 128
-    lw $t1, 0($v1)
-    lw $t2, 0($v0)
-    lw $t3, 0($s5)
-    lw $t4, 0($s6)
-    bne $t1, $t5, base_4_further_check1
-    j base_4_further_check2
+    addi $v1, $v1, 128        # Increment $v1 to point to the next row in the display
+    addi $v0, $v0, 128        # Increment $v0 to point to the next row in the display
+    addi $s5, $s5, 128        # Increment $s5 to point to the next row in the display
+    addi $s6, $s6, 128        # Increment $s6 to point to the next row in the display
+    lw $t1, 0($v1)           # Load value from the new position in $v1 into $t1
+    lw $t2, 0($v0)           # Load value from the new position in $v0 into $t2
+    lw $t3, 0($s5)           # Load value from the new position in $s5 into $t3
+    lw $t4, 0($s6)           # Load value from the new position in $s6 into $t4
+    bne $t1, $t5, base_4_further_check1 # If $t1 is not equal to $t5, jump to further check
+    j base_4_further_check2  # Otherwise, jump to base_4_further_check2
     
 base_4_further_check1:
-    bne $t1, $t7, exit_drop
+    bne $t1, $t7, exit_drop  # If $t1 is not equal to $t7, jump to exit_drop
     
 base_4_further_check2:       
-    bne $t2, $t5, base_4_further_check3
-    j base_4_further_check4
+    bne $t2, $t5, base_4_further_check3 # If $t2 is not equal to $t5, jump to further check
+    j base_4_further_check4  # Otherwise, jump to base_4_further_check4
     
 base_4_further_check3:    
-    bne $t2, $t7, exit_drop
+    bne $t2, $t7, exit_drop  # If $t2 is not equal to $t7, jump to exit_drop
     
 base_4_further_check4:           
-    bne $t3, $t5, base_4_further_check5
-    j base_4_further_check6
+    bne $t3, $t5, base_4_further_check5 # If $t3 is not equal to $t5, jump to further check
+    j base_4_further_check6  # Otherwise, jump to base_4_further_check6
     
 base_4_further_check5:    
-    bne $t3, $t7, exit_drop
+    bne $t3, $t7, exit_drop  # If $t3 is not equal to $t7, jump to exit_drop
     
 base_4_further_check6:           
-    bne $t4, $t5, base_4_further_check7
-    j base_4_update
+    bne $t4, $t5, base_4_further_check7 # If $t4 is not equal to $t5, jump to further check
+    j base_4_update          # Otherwise, jump to base_4_update
     
 base_4_further_check7:    
-    bne $t4, $t7, exit_drop    
+    bne $t4, $t7, exit_drop  # If $t4 is not equal to $t7, jump to exit_drop    
     
 base_4_update:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 128    # move down
+    lw $s0, 0($sp)           # Load address from stack position 0 into $s0
+    lw $t3, 0($s0)           # Load color from the address in $s0 into $t3
+    addi $s0, $s0, 128       # Move the address in $s0 down by 128 bytes
     
-    lw $s4, 4($sp)      # move down
-    addi $s4, $s4, 128     # Store address at 4($sp)
+    lw $s4, 4($sp)           # Load address from stack position 4 into $s4
+    addi $s4, $s4, 128       # Move the address in $s4 down by 128 bytes
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 128    # move down
+    lw $s2, 8($sp)           # Load address from stack position 8 into $s2
+    addi $s2, $s2, 128       # Move the address in $s2 down by 128 bytes
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 128    # move down
+    lw $s3, 12($sp)          # Load address from stack position 12 into $s3
+    addi $s3, $s3, 128       # Move the address in $s3 down by 128 bytes
     
-    jal delete_shape
+    jal delete_shape         # Call delete_shape subroutine to remove the shape
     
+    subi $sp, $sp, 16        # Allocate 16 bytes on the stack for saving state
+    sw $s0, 0($sp)           # Save $s0 (address) on the stack
+    sw $s4, 4($sp)           # Save $s4 (address) on the stack
+    sw $s2, 8($sp)           # Save $s2 (address) on the stack
+    sw $s3, 12($sp)          # Save $s3 (address) on the stack
+    move $a0, $t3            # Move color into $a0 for use by fill_color
     
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)  
-    move $a0, $t3
-    
-    jal fill_color
-    j speed
-    
+    jal fill_color           # Call fill_color subroutine to update the display with color
+    j speed                  # Jump to speed for the next operation
+
 exit_drop:
-    jal calculate_row
-    addi $sp, $sp, 16
-    jal sorted_rows
-    jal remove_duplicate
-    la $s7, row_to_delete
-    li $s3, 0
+    jal calculate_row        # Call calculate_row subroutine to compute row information
+    addi $sp, $sp, 16        # Deallocate 16 bytes from the stack
+    jal sorted_rows          # Call sorted_rows subroutine to sort rows
+    jal remove_duplicate     # Call remove_duplicate subroutine to remove duplicates
+    la $s7, row_to_delete    # Load address of row_to_delete into $s7
+    li $s3, 0                # Initialize $s3 to 0
     
 check_row_loop:
-    beq $t4, 0, start   
-    lw $a1, 0($sp)
-    add $a1, $a1, $s3
+    beq $t4, 0, start       # If $t4 is 0, jump to start
+    lw $a1, 0($sp)          # Load address from stack into $a1
+    add $a1, $a1, $s3       # Add offset to $a1
     
-    jal Row_check
-    addi $sp, $sp, 4
-    subi $t4, $t4, 1
-    la $s7, row_to_delete
-    lw $a1, 0($s7)
+    jal Row_check           # Call Row_check subroutine to check the row
+    addi $sp, $sp, 4        # Move stack pointer down by 4 bytes
+    subi $t4, $t4, 1        # Decrement $t4 by 1
+    la $s7, row_to_delete   # Load address of row_to_delete into $s7
+    lw $a1, 0($s7)         # Load value from row_to_delete into $a1
 
-                                                   
-    beq $a1, -1, cross
-    beq $a1, 0, check_row_loop
-    jal Delete_row
+    beq $a1, -1, cross     # If $a1 is -1, jump to cross
+    beq $a1, 0, check_row_loop # If $a1 is 0, repeat check_row_loop
+    jal Delete_row          # Call Delete_row subroutine to delete the row
     
-    la $s7, Mark
-    lw $t1, 0($s7)
+    la $s7, Mark            # Load address of Mark into $s7
+    lw $t1, 0($s7)          # Load value of Mark into $t1
 
 cross:
-    li $a1, 1584
-    li $a0, 0xFF0000
-    jal draw_x
-    j Terminate_program    
+    li $a1, 1584            # Load value 1584 into $a1
+    li $a0, 0xFF0000        # Load red color value into $a0
+    jal draw_x              # Call draw_x subroutine to draw an X
+    j Terminate_program     # Jump to Terminate_program
+    
 check_mark:
-    beq $t1, 0, mark_to_1
-    beq $t1, 1, mark_to_2
-    beq $t1, 2, mark_to_3
-    beq $t1, 3, mark_to_4
-    j delete_update
+    beq $t1, 0, mark_to_1  # If $t1 is 0, jump to mark_to_1
+    beq $t1, 1, mark_to_2  # If $t1 is 1, jump to mark_to_2
+    beq $t1, 2, mark_to_3  # If $t1 is 2, jump to mark_to_3
+    beq $t1, 3, mark_to_4  # If $t1 is 3, jump to mark_to_4
+    j delete_update        # Otherwise, jump to delete_update
 
 mark_to_1:
-    li $a1, 3460
-    li $a0, 0x8A8F9A
-    jal draw_0
-    li $a0, 0xF5C6C6 
-    jal draw_1
-    j delete_update
-     
+    li $a1, 3460            # Load value 3460 into $a1
+    li $a0, 0x8A8F9A        # Load color value into $a0
+    jal draw_0              # Call draw_0 subroutine
+    li $a0, 0xF5C6C6        # Load color value into $a0
+    jal draw_1              # Call draw_1 subroutine
+    j delete_update         # Jump to delete_update
+
 mark_to_2:
-    li $a1, 3460
-    li $a0, 0x8A8F9A
-    jal draw_1
-    li $a0, 0xF5C6C6 
-    jal draw_2
-    j delete_update
+    li $a1, 3460            # Load value 3460 into $a1
+    li $a0, 0x8A8F9A        # Load color value into $a0
+    jal draw_1              # Call draw_1 subroutine
+    li $a0, 0xF5C6C6        # Load color value into $a0
+    jal draw_2              # Call draw_2 subroutine
+    j delete_update         # Jump to delete_update
 
 mark_to_3:    
-    li $a1, 3460
-    li $a0, 0x8A8F9A
-    jal draw_2
-    li $a0, 0xF5C6C6 
-    jal draw_3
-    j delete_update
-     
+    li $a1, 3460            # Load value 3460 into $a1
+    li $a0, 0x8A8F9A        # Load color value into $a0
+    jal draw_2              # Call draw_2 subroutine
+    li $a0, 0xF5C6C6        # Load color value into $a0
+    jal draw_3              # Call draw_3 subroutine
+    j delete_update         # Jump to delete_update
+
 mark_to_4:    
-    li $a1, 3460
-    li $a0, 0x8A8F9A
-    jal draw_3
-    li $a0, 0xF5C6C6 
-    jal draw_4
-    li $a1, 1592
-    li $a0, 0xFF0000
-    jal draw_w
-    j Terminate_program       
+    li $a1, 3460            # Load value 3460 into $a1
+    li $a0, 0x8A8F9A        # Load color value into $a0
+    jal draw_3              # Call draw_3 subroutine
+    li $a0, 0xF5C6C6        # Load color value into $a0
+    jal draw_4              # Call draw_4 subroutine
+    li $a1, 1592            # Load value 1592 into $a1
+    li $a0, 0xFF0000        # Load red color value into $a0
+    jal draw_w              # Call draw_w subroutine to draw a W
+    j Terminate_program     # Jump to Terminate_program
     
 delete_update:
-    la $s7, Mark
-    lw $a0, 0($s7)
-    addi $a0, $a0, 1
-    sw $a0, 0($s7)
-              
-    la $s7, row_to_delete
-    la $s5, max_row
-    lw $s4, 0($s5)
-    addi $s4, $s4, 1
-    lw $s4, 0($s5)
+    la $s7, Mark            # Load address of Mark into $s7
+    lw $a0, 0($s7)          # Load value of Mark into $a0
+    addi $a0, $a0, 1        # Increment $a0
+    sw $a0, 0($s7)          # Store updated value back to Mark
     
-    addi $s3, $s3, 1
-    li $a1, 0
-    sw $a1, 0($s7)
-    j check_row_loop
+    la $s7, row_to_delete   # Load address of row_to_delete into $s7
+    la $s5, max_row         # Load address of max_row into $s5
+    lw $s4, 0($s5)          # Load value from max_row into $s4
+    addi $s4, $s4, 1        # Increment $s4
+    lw $s4, 0($s5)          # Store incremented value back to max_row
+    
+    addi $s3, $s3, 1        # Increment $s3
+    li $a1, 0               # Load 0 into $a1
+    sw $a1, 0($s7)          # Store 0 into row_to_delete
+    j check_row_loop        # Jump to check_row_loop
 
 Terminate_program:
-    la $s7, row_to_delete
-    la $s5, max_row
-    li $t1, 0
-    sw $t1, 0($s7)
-    li $t1, 30
-    sw $t1, 0($s5)
-    la $s7, change_shape_chance
-    la $s5, Mark
-    li $t1, 0
-    sw $t1, 0($s5)
-    li $t1, 3
-    sw $t1, 0($s7)
-    mul $t4, $t4, 4
-    add $sp, $sp, $t4
+    la $s7, row_to_delete   # Load address of row_to_delete into $s7
+    la $s5, max_row         # Load address of max_row into $s5
+    li $t1, 0               # Load 0 into $t1
+    sw $t1, 0($s7)          # Store 0 into row_to_delete
+    li $t1, 30              # Load 30 into $t1
+    sw $t1, 0($s5)          # Store 30 into max_row
+    la $s7, change_shape_chance # Load address of change_shape_chance into $s7
+    la $s5, Mark            # Load address of Mark into $s5
+    li $t1, 0               # Load 0 into $t1
+    sw $t1, 0($s5)          # Store 0 into Mark
+    li $t1, 3               # Load 3 into $t1
+    sw $t1, 0($s7)          # Store 3 into change_shape_chance
+    mul $t4, $t4, 4         # Multiply $t4 by 4
+    add $sp, $sp, $t4       # Deallocate stack space
     
 check_reset:    
-    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
-    lw $t8, 0($t0)                  # Load first word from keyboard
-    beq $t8, 1, check_r
-    j check_reset
-check_r:
-    lw $a0, 4($t0)
-    beq $a0, 0x72, reset
-    beq $a0, 0x71, Terminate          
-    j check_reset
-reset:
-    j main
+    lw $t0, ADDR_KBRD       # Load base address for keyboard into $t0
+    lw $t8, 0($t0)          # Load first word from keyboard into $t8
+    beq $t8, 1, check_r    # If $t8 equals 1, jump to check_r
+    j check_reset          # Otherwise, repeat check_reset
 
+check_r:
+    lw $a0, 4($t0)          # Load second word from keyboard into $a0
+    beq $a0, 0x72, reset   # If $a0 equals 0x72, jump to reset
+    beq $a0, 0x71, Terminate # If $a0 equals 0x71, jump to Terminate
+    j check_reset          # Otherwise, repeat check_reset
+
+reset:
+    j main                 # Jump to main to reset the program
     
 ##############################################################
 #FUNCTION START HERE
 ##############################################################################
 Delete_row:
-    lw $t0, ADDR_DSPL
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
-    la $s5, max_row
-    lw $s5, 0($s5)
-    la $s7, row_to_delete
-    lw $s7, 0($s7)
+    lw $t0, ADDR_DSPL                # Load the base address of the display
+    li $t5, 0xE4DCD1                 # Define grey color
+    li $t7, 0xC5CCD6                 # Define white color
+    la $s5, max_row                  # Load the address of max_row
+    lw $s5, 0($s5)                   # Load the value of max_row into $s5
+    la $s7, row_to_delete            # Load the address of row_to_delete
+    lw $s7, 0($s7)                   # Load the row number to delete into $s7
     
-    mul $t6, $s7, 128
-    addi $t6, $t6, 12
-    add $t6, $t0, $t6
+    mul $t6, $s7, 128                # Calculate the base address of the row to delete
+    addi $t6, $t6, 12                # Offset to the start of the row data
+    add $t6, $t0, $t6                # Calculate the address of the row in the display
     
-    addi $t8, $t6, 100
+    addi $t8, $t6, 100               # Calculate the end address of the row (100 pixels ahead)
 
 Delete_row_outer_loop:
-    bgt $s5, $s7, exit_delete_row
+    bgt $s5, $s7, exit_delete_row   # If current row ($s5) > row_to_delete ($s7), exit loop
     
 Delete_row_inner_loop:        
-    subi $t9, $t6, 128
-    lw $t9, 0($t9)
-    bgt $t6, $t8, exit_delete_row_inner_loop
-    beq $t9, $t5, color_white
-    beq $t9, $t7, color_grey
-    sw $t9, 0($t6)
-    j delete_row_inner_update
+    subi $t9, $t6, 128              # Move to the previous pixel in the row
+    lw $t9, 0($t9)                  # Load the color of the pixel
+    bgt $t6, $t8, exit_delete_row_inner_loop  # If address > end address, exit inner loop
+    beq $t9, $t5, color_white       # If pixel is grey, go to color_white
+    beq $t9, $t7, color_grey        # If pixel is white, go to color_grey
+    sw $t9, 0($t6)                  # Store the color of the pixel (no change)
+    j delete_row_inner_update       # Update and continue
+    
 color_white:
-    sw $t7, 0($t6)
-    j delete_row_inner_update
+    sw $t7, 0($t6)                  # Change pixel to white
+    j delete_row_inner_update       # Update and continue
+    
 color_grey:
-    sw $t5, 0($t6)    
+    sw $t5, 0($t6)                  # Change pixel to grey
+    
 delete_row_inner_update:
-    addi $t6, $t6, 4
-    j Delete_row_inner_loop
+    addi $t6, $t6, 4                # Move to the next pixel
+    j Delete_row_inner_loop         # Continue inner loop
     
 exit_delete_row_inner_loop:
-    subi $s7, $s7, 1
-    mul $t6, $s7, 128
-    addi $t6, $t6, 12
-    add $t6, $t0, $t6
+    subi $s7, $s7, 1                # Decrease the row to delete counter
+    mul $t6, $s7, 128              # Recalculate the base address for the next row
+    addi $t6, $t6, 12                # Offset to the start of the row data
+    add $t6, $t0, $t6                # Calculate the address of the row in the display
     
-    addi $t8, $t6, 100
-    j Delete_row_outer_loop
+    addi $t8, $t6, 100               # Recalculate the end address of the row
+    j Delete_row_outer_loop         # Continue outer loop
     
 exit_delete_row:
-    jr $ra                        
-#########################################
-Row_check:
-    lw $t0, ADDR_DSPL
-    move $t6, $a1 # assume we have the row number in $a1
-    la $s7, row_to_delete
-    
-    mul $t6, $t6, 128
-    addi $t6, $t6, 12
-    add $t6, $t0, $t6
-    lw $t9, 0($t6)
-    
-    addi $t8, $t6, 100
-    
+    jr $ra                          # Return from function
 
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
+#########################################
+
+Row_check:
+    lw $t0, ADDR_DSPL                # Load the base address of the display
+    move $t6, $a1                    # Move the row number (argument) to $t6
+    la $s7, row_to_delete            # Load the address of row_to_delete
     
-    blt $a1, 5, End_game  #If the row is less than 5, we end the game
+    mul $t6, $t6, 128                # Calculate the base address of the row
+    addi $t6, $t6, 12                # Offset to the start of the row data
+    add $t6, $t0, $t6                # Calculate the address of the row in the display
+    lw $t9, 0($t6)                  # Load the first pixel of the row
+    
+    addi $t8, $t6, 100               # Calculate the end address of the row (100 pixels ahead)
+
+    li $t5, 0xE4DCD1                 # Define grey color
+    li $t7, 0xC5CCD6                 # Define white color
+    
+    blt $a1, 5, End_game            # If the row number < 5, end the game
     
 check_rows_inner_loop:
-    lw $t9, 0($t6)
-    bgt $t6, $t8, Full
-    beq $t9, $t5, Not_full
+    lw $t9, 0($t6)                  # Load the color of the pixel
+    bgt $t6, $t8, Full              # If address > end address, row is full
+    beq $t9, $t5, Not_full         # If pixel is grey, row is not full
     
 further_check_row_color: 
-    beq $t9, $t7, Not_full
+    beq $t9, $t7, Not_full         # If pixel is white, row is not full
     
 check_rows_inner_loop_update:
-    addi $t6, $t6, 4
-    j check_rows_inner_loop
-    
+    addi $t6, $t6, 4                # Move to the next pixel
+    j check_rows_inner_loop         # Continue checking
+
 Not_full:
-    jr $ra
+    jr $ra                          # Return if the row is not full
     
 Full:
-    la $s7, row_to_delete
-    sw $a1, 0($s7)
+    la $s7, row_to_delete            # Load the address of row_to_delete
+    sw $a1, 0($s7)                   # Store the row number as full
     
-    jr $ra
+    jr $ra                          # Return
     
 End_game:
-    li $t6, -1
-    sw $t6, 0($s7)
+    li $t6, -1                       # Set the flag to indicate end of game
+    sw $t6, 0($s7)                  # Store the flag in row_to_delete
     
-    jr $ra           
-######################################### 
+    jr $ra                          # Return
+
 
 ##############################################################################
 sorted_rows:
-    la $s7, numbers                # Load address of numbers into $s7
-    lw $s0, 0($s7)
-    lw $s1, 4($s7)
-    lw $s2, 8($s7)
-    lw $s3, 12($s7) 
-    lw $a0, 0($s7)
+    la $s7, numbers                # Load the base address of the numbers array into $s7
+    lw $s0, 0($s7)                 # Load numbers[0] into $s0
+    lw $s1, 4($s7)                 # Load numbers[1] into $s1
+    lw $s2, 8($s7)                 # Load numbers[2] into $s2
+    lw $s3, 12($s7)                # Load numbers[3] into $s3
+    lw $a0, 0($s7)                 # Load the first element into $a0
     
-
-    li $s0, 0                      # Initialize counter 1 for outer loop
-    li $s6, 3                      # n - 1, where n = number of elements - 1
-
+    li $s0, 0                      # Initialize outer loop counter to 0
+    li $s6, 3                      # Set loop limit for outer loop (n - 1, where n = 4 elements)
 
 sort_loop:
     li $s1, 0                      # Reset inner loop counter
 
 inner_loop:
-    sll $t7, $s1, 2                # Multiply $s1 by 4 (word size)
+    sll $t7, $s1, 2                # Calculate the address offset (s1 * 4)
     add $t7, $s7, $t7              # Address of numbers[s1]
     
     lw $t0, 0($t7)                 # Load numbers[s1] into $t0
     lw $t1, 4($t7)                 # Load numbers[s1 + 1] into $t1
 
-    sgt $t2, $t1, $t0              # If $t1 > $t0 (next element > current element)
+    sgt $t2, $t1, $t0              # Check if $t1 > $t0 (next element > current element)
     beq $t2, $zero, no_swap        # If $t2 == 0, no swap needed
 
     # Swap elements
@@ -1458,173 +1449,161 @@ inner_loop:
 
 no_swap:
     addi $s1, $s1, 1               # Increment inner loop counter
-    sub $s5, $s6, $s0              # Calculate remaining iterations
+    sub $s5, $s6, $s0              # Calculate the remaining iterations for inner loop
     bne $s1, $s5, inner_loop       # If $s1 != $s5, continue inner loop
 
     addi $s0, $s0, 1               # Increment outer loop counter
     li $s1, 0                      # Reset inner loop counter
     bne $s0, $s6, sort_loop        # If $s0 != $s6, continue outer loop
 
-
 final:
-    lw $a0, 12($s7)
-    la $a1, max_row
-    lw $a2, 0($a1)
-    ble $a0, $a2, update_max_row
-    j update_final
+    lw $a0, 12($s7)                # Load the last element into $a0
+    la $a1, max_row                # Load the address of max_row into $a1
+    lw $a2, 0($a1)                 # Load the value of max_row into $a2
+    ble $a0, $a2, update_max_row   # If $a0 <= $a2, go to update_max_row
+    j update_final                 # Otherwise, go to update_final
     
 update_max_row:
-    sw $a0, 0($a1)
+    sw $a0, 0($a1)                 # Update max_row with $a0
     
 update_final: 
-    lw $a0, 0($s7)           
-    lw $a1, 12($s7)
-    sw $a0, 12($s7)
-    sw $a1, 0($s7)
+    lw $a0, 0($s7)                 # Load the first element into $a0
+    lw $a1, 12($s7)                # Load the last element into $a1
+    sw $a0, 12($s7)                # Swap first and last elements
+    sw $a1, 0($s7)                 # Swap first and last elements
     
-    lw $a0, 4($s7)
-    lw $a1, 8($s7)
-    sw $a0, 8($s7)
-    sw $a1, 4($s7)
+    lw $a0, 4($s7)                 # Load the second element into $a0
+    lw $a1, 8($s7)                 # Load the third element into $a1
+    sw $a0, 8($s7)                 # Swap second and third elements
+    sw $a1, 4($s7)                 # Swap second and third elements
       
-    jr $ra                     # Make the syscall to exit the program
+    jr $ra                         # Return from function
 
-                                                                                   
 ##############################################################################
 ##############################################################################
+
 remove_duplicate:
-    li $t2, 0
-    li $t4, 0
-    la $s7, numbers
-    lw $v1, 0($s7)
-    lw $s6, 4($s7) 
+    li $t2, 0                      # Initialize counter for unique values
+    li $t4, 0                      # Initialize counter for processed values
+    la $s7, numbers                # Load the base address of the numbers array into $s7
+    lw $v1, 0($s7)                 # Load the first element into $v1
+    lw $s6, 4($s7)                 # Load the second element into $s6 
     
 check_loop:
-    bgt $t2, 2, exit_duplicate_loop
-    beq $v1, $s6, update
-    subi $sp, $sp, 4
-    sw $v1, 0($sp)
+    bgt $t2, 2, exit_duplicate_loop # If counter $t2 > 2, exit the loop
+    beq $v1, $s6, update            # If current element == next element, go to update
+    subi $sp, $sp, 4                # Allocate space on stack for unique value
+    sw $v1, 0($sp)                  # Save the unique value to stack
     
-    addi $t4, $t4, 1
+    addi $t4, $t4, 1                # Increment processed value counter
     
 update:
-   addi $t2, $t2, 1
-   mul $t3, $t2, 4
-   add $v1, $s7, $t3
-   lw $v1, 0($v1)
-   addi $t3, $t3, 4 
-   add $s6, $s7, $t3
-   lw $s6, 0($s6)
-   j check_loop
+   addi $t2, $t2, 1                # Increment unique value counter
+   mul $t3, $t2, 4                 # Calculate offset for the next element
+   add $v1, $s7, $t3              # Address of the next element
+   lw $v1, 0($v1)                 # Load the next element into $v1
+   addi $t3, $t3, 4               # Increment offset
+   add $s6, $s7, $t3              # Address of the element after the next
+   lw $s6, 0($s6)                 # Load the element after the next into $s6
+   j check_loop                   # Continue checking loop
        
 exit_duplicate_loop: 
-    subi $sp, $sp, 4
-    lw $s6, 12($s7) 
-    sw $s6, 0($sp)
-    addi $t4, $t4, 1
+    subi $sp, $sp, 4                # Allocate space on stack for remaining values
+    lw $s6, 12($s7)                # Load the last element into $s6
+    sw $s6, 0($sp)                 # Save the last element to stack
+    addi $t4, $t4, 1               # Increment counter for processed values
     
-    jr $ra                                                                     
+    jr $ra                         # Return from function
+                                                                   
 ##############################################################################
 ##############################################################################
 calculate_row:
-    lw $t0, ADDR_DSPL
-    la $s0, numbers
-    li $t1, 128
-     
-    lw $a0, 0($sp)
-    sub $a0, $a0, $t0    #calculate address
+    lw $t0, ADDR_DSPL          # Load base address of display into $t0
+    la $s0, numbers            # Load address of numbers array into $s0
+    li $t1, 128                # Set divisor for calculating row numbers
 
-    
-    div $a0, $t1
-    mflo $a0
-    
-    
-    sw $a0, 0($s0)
+    lw $a0, 0($sp)             # Load address value from stack
+    sub $a0, $a0, $t0          # Calculate address offset from base address
+    div $a0, $t1               # Divide by 128 to get row number
+    mflo $a0                   # Get quotient (row number)
+    sw $a0, 0($s0)             # Store result in numbers[0]
 
-    
-    lw $a0, 4($sp)
-    sub $a0, $a0, $t0    #calculate address
+    lw $a0, 4($sp)             # Load next address value from stack
+    sub $a0, $a0, $t0          # Calculate address offset from base address
+    div $a0, $t1               # Divide by 128 to get row number
+    mflo $a0                   # Get quotient (row number)
+    sw $a0, 4($s0)             # Store result in numbers[1]
 
-    
-    div $a0, $t1
-    mflo $a0
+    lw $a0, 8($sp)             # Load next address value from stack
+    sub $a0, $a0, $t0          # Calculate address offset from base address
+    div $a0, $t1               # Divide by 128 to get row number
+    mflo $a0                   # Get quotient (row number)
+    sw $a0, 8($s0)             # Store result in numbers[2]
 
-    sw $a0, 4($s0)
+    lw $a0, 12($sp)            # Load next address value from stack
+    sub $a0, $a0, $t0          # Calculate address offset from base address
+    div $a0, $t1               # Divide by 128 to get row number
+    mflo $a0                   # Get quotient (row number)
+    sw $a0, 12($s0)            # Store result in numbers[3]
 
-    
-    lw $a0, 8($sp)
-    sub $a0, $a0, $t0    #calculate address
+    jr $ra                     # Return from function
 
-    div $a0, $t1
-    mflo $a0
-
-    sw $a0, 8($s0)
-
-    
-    lw $a0, 12($sp)
-    sub $a0, $a0, $t0    #calculate address
-
-    div $a0, $t1
-    mflo $a0
-
-    sw $a0, 12($s0)
-
-    jr $ra
 ##############################################################
 delete_shape:
-    li $t5, 0xE4DCD1       # gret color
-    li $t7, 0xC5CCD6       # white color
-    li $t9, 0x8A8F9A       # wall
-    li $t2, 4
+    li $t5, 0xE4DCD1           # Define grey color
+    li $t7, 0xC5CCD6           # Define white color
+    li $t9, 0x8A8F9A           # Define wall color
+    li $t2, 4                  # Set initial counter value
     
-    li $t6, 1
-    lw $a1, 0($sp)
-    subi $s1, $a1, 4
-    lw $t4, 0($s1)      
-    bne $t4, $t9, left_loop
+    li $t6, 1                  # Initialize flag for left checking
+    lw $a1, 0($sp)             # Load address from stack
+    subi $s1, $a1, 4           # Calculate address of the element to the left
+    lw $t4, 0($s1)             # Load the value at the calculated address
+    bne $t4, $t9, left_loop    # If not wall color, proceed to left_loop
 
-    li $t6, 0
-    lw $t9, 12($sp)
-    sw $a1, 12($sp)
-    sw $t9, 0($sp)
+    li $t6, 0                  # Reset flag for left checking
+    lw $t9, 12($sp)            # Load address of the element at the end
+    sw $a1, 12($sp)            # Swap addresses
+    sw $t9, 0($sp)             # Swap addresses
     
-    lw $a1, 4($sp)
-    lw $t9, 8($sp)
-    sw $a1, 8($sp)
-    sw $t9, 4($sp)
-    lw $a1, 0($sp)
-       
+    lw $a1, 4($sp)             # Load address of the next element
+    lw $t9, 8($sp)             # Load address of the element to the right
+    sw $a1, 8($sp)             # Swap addresses
+    sw $t9, 4($sp)             # Swap addresses
+    lw $a1, 0($sp)             # Reload address
+
 left_loop: 
-    beq $t2, 0, exit_deletetion
-    lw $a1, 0($sp)
+    beq $t2, 0, exit_deletetion # If counter is 0, exit the loop
+    lw $a1, 0($sp)             # Load address from stack
     
-    beq $t6, 1, check_left
-    addi $s1, $a1, 4 #check color on the right
+    beq $t6, 1, check_left    # If flag is 1, check left
+    addi $s1, $a1, 4          # Otherwise, check color on the right
     j check_color
     
 check_left:
-    subi $s1, $a1, 4 #check color on the left
+    subi $s1, $a1, 4          # Check color on the left
     
 check_color:    
-    lw $t4, 0($s1)
-    beq $t4, $t7, left_grey
-    beq $t4, $t5, left_white
+    lw $t4, 0($s1)            # Load color value at the left address
+    beq $t4, $t7, left_grey   # If grey color, go to left_grey
+    beq $t4, $t5, left_white  # If white color, go to left_white
     
 left_grey:
-    sw $t5, 0($a1)
+    sw $t5, 0($a1)            # Set color to grey
     j left_update
     
 left_white:
-    sw $t7, 0($a1)
+    sw $t7, 0($a1)            # Set color to white
     j left_update
      
 left_update:  
-    addi $sp, $sp, 4
-    subi $t2, $t2, 1
-    j left_loop
+    addi $sp, $sp, 4          # Deallocate stack space
+    subi $t2, $t2, 1          # Decrement counter
+    j left_loop               # Continue left_loop
         
 exit_deletetion:
-    jr $ra
+    jr $ra                    # Return from function
+
 #############################################################                                                                                                                                                                                                                                                                                                                                                                                                                                            
 fill_color:
     li $t2, 1            # Initialize counter (starting value)
@@ -1632,26 +1611,28 @@ fill_color:
 
 fill_loop:
     beq $t2, 5, exit_fill_color  # Exit loop when counter equals 5
-    sw $a0, 0($t6)      # Store value in $a0 at address $t5
+    sw $a0, 0($t6)      # Store value in $a0 at address $t6
 
 fill_color_update:
     mul $t3, $t2, 4     # Compute offset (4 bytes per element)
     add $t3, $sp, $t3   # Update address in $t6
-    lw $t6, 0($t3)
+    lw $t6, 0($t3)      # Load the next address from the updated address
     addi $t2, $t2, 1    # Increment counter
     j fill_loop         # Repeat loop
 
 exit_fill_color:
     jr $ra              # Return from function
+
 ###############################################################
 random_shape:
-   li $v0, 42
-   li $a0, 0
-   li $a1, 7
-   syscall
+   li $v0, 42          # Set up syscall number for random number generation
+   li $a0, 0           # Set lower bound of random number range
+   li $a1, 7           # Set upper bound of random number range
+   syscall             # Generate random number within the range
     
-   move $t1, $a0 #random shape of Tetrominoes
-   jr $ra
+   move $t1, $a0       # Move the generated random number into $t1 (random shape of Tetrominoes)
+   jr $ra              # Return from function
+
 ##################################################################################
 draw_x:
     lw $t0, ADDR_DSPL  # Load the base address of the display
@@ -1916,7 +1897,5 @@ first_column:
     j Loop
 
 end_loop:
-    # initially 3 chances to change
-    
     jr $ra    
    
