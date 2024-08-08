@@ -47,6 +47,7 @@ newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
 max_row: .word 30
+timer_base: .word 0x10000000  # Example base address for sound timer
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
