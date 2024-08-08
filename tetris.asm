@@ -47,6 +47,7 @@ newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
 max_row: .word 30
+change_shape_chance: .word 3
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -69,7 +70,8 @@ ADDR_KBRD:
 main:
     lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     jal init_walls_board   # Call the subroutine to initialize the walls and board
-
+    li $a0, 0xE4DCD1
+    jal draw_3
 start:
     lw $t0, ADDR_DSPL
     
@@ -237,6 +239,7 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x64, respond_to_D
     beq $a0, 0x73, respond_to_S
     beq $a0, 0x70, respond_to_P
+    beq $a0, 0x63, respond_to_C
 
     b Auto_drop
 
@@ -399,7 +402,56 @@ check_P:
     lw $a0, 4($t0)
     beq $a0, 0x70, Auto_drop         # If first word 1, key is pressed
     j respond_to_P
-       
+
+respond_to_C:
+    la $s7, change_shape_chance
+    lw $t1, 0($s7)
+    
+    li $v0, 1
+    move $a0, $t1
+    syscall
+    
+    beq $t1, 0, Auto_drop
+    jal delete_shape
+    addi $sp, $sp, 16
+    beq $t1, 1, change_to_0
+    beq $t1, 2, change_to_1
+    
+    li $a0, 0x8A8F9A
+    jal draw_3
+    li $a0, 0xE4DCD1 
+    jal draw_2
+    
+    li $v0, 11
+    li $a0, 'a'
+    syscall
+    
+    j update_drop_chance
+
+change_to_0:
+    li $a0, 0x8A8F9A
+    jal draw_1
+    li $a0, 0xE4DCD1 
+    jal draw_0
+    j update_drop_chance
+     
+change_to_1:
+    li $a0, 0x8A8F9A
+    jal draw_2
+    li $a0, 0xE4DCD1 
+    jal draw_1
+    
+update_drop_chance:
+    la $s7, change_shape_chance
+    lw $t1, 0($s7)
+    subi $t1, $t1, 1
+    li $v0, 1
+    move $a0, $t1
+    syscall
+    sw $t1, 0($s7)
+    j start
+                
+              
 Terminate:
     li $v0, 10             # Terminate the program gracefully
     syscall    
@@ -1607,7 +1659,94 @@ random_shape:
     
    move $t1, $a0 #random shape of Tetrominoes
    jr $ra
-##################################################################################             
+##################################################################################
+draw_3:
+    lw $t0, ADDR_DSPL
+    addi $t6, $t0, 3568
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 132
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################  
+draw_2:
+    lw $t0, ADDR_DSPL
+    addi $t6, $t0, 3568
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 132
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+################################################################################## 
+draw_1:
+    lw $t0, ADDR_DSPL
+    addi $t6, $t0, 3568
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################
+draw_0:
+    lw $t0, ADDR_DSPL
+    addi $t6, $t0, 3568
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################
+            
 init_walls_board:
     li $t2, 0              # t2 = y (row index)
     li $t3, 0              # t3 = x (column index)
@@ -1621,7 +1760,7 @@ Loop:
     # Determine if we are in a wall area
     ble  $t3, 2, wall       # If x is 0 (first column), draw wall
     bge $t3, 29, wall         # If x == 255 (last column), draw wall
-    bge $t2, 29, wall         # If y == 255 (last row), draw wall
+    bge $t2, 26, wall         # If y == 255 (last row), draw wall
 
     # Determine background color
     andi $t7, $t2, 1          # $t7 = y % 2 (check if y is odd)
@@ -1655,5 +1794,7 @@ first_column:
     j Loop
 
 end_loop:
+    # initially 3 chances to change
+    
     jr $ra    
    
