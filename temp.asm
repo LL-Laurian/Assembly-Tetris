@@ -46,6 +46,7 @@ counter: .asciiz "current counter is "
 newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
+max_row: .word 30
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -81,7 +82,7 @@ start:
 
 ##########################################################
 init_shape: 
-   li $t1, 0  
+   li $t1, 1  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -1097,12 +1098,19 @@ exit_drop:
     la $s0, numbers
     addi $s0, $s0, 16
     la $s7, row_to_delete
+    li $s3, 0
     
 check_row_loop:
     beq $t4, 0, start   
     lw $a1, 0($sp)
+    add $a1, $a1, $s3
     li $v0, 1
     move $a0, $a1
+    syscall
+    
+    
+    li $v0, 4
+    la $a0, newline
     syscall
     
     jal Row_check
@@ -1110,19 +1118,33 @@ check_row_loop:
     subi $t4, $t4, 1
     
     lw $a1, 0($s7)
+    
     li $v0, 1
     move $a0, $a1
+    syscall
+    li $v0, 4
+    la $a0, newline
     syscall
                                                    
     beq $a1, -1, Terminate_program
     beq $a1, 0, check_row_loop
+    jal Delete_row
+    la $s7, row_to_delete
+    la $s5, max_row
+    lw $s4, 0($s5)
+    addi $s4, $s4, 1
+    lw $s4, 0($s5)
     
+    addi $s3, $s3, 1
     li $a1, 0
     sw $a1, 0($s7)
     j check_row_loop
 
 Terminate_program:
+    la $s7, row_to_delete
+    la $s5, max_row
     addi $s7, $s7, 4
+    addi $s5, $s5, 4
     mul $t4, $t4, 4
     add $sp, $sp, $t4
     j Terminate         
@@ -1133,7 +1155,52 @@ Terminate_program:
 ##############################################################
 #FUNCTION START HERE
 ##############################################################################
+Delete_row:
+    lw $t0, ADDR_DSPL
+    li $t5, 0xE4DCD1       # grey color
+    li $t7, 0xC5CCD6       # white color
+    la $s5, max_row
+    lw $s5, 0($s5)
+    la $s7, row_to_delete
+    lw $s7, 0($s7)
+    
+    mul $t6, $s7, 128
+    addi $t6, $t6, 12
+    add $t6, $t0, $t6
+    
+    addi $t8, $t6, 100
 
+Delete_row_outer_loop:
+    bgt $s7, $s5, exit_delete_row
+    
+Delete_row_inner_loop:        
+    subi $t9, $t6, 128
+    lw $t9, 0($t9)
+    bgt $t6, $t8, exit_delete_row_inner_loop
+    beq $t9, $t5, color_white
+    beq $t9, $t7, color_grey
+    sw $t9, 0($t6)
+    j delete_row_inner_update
+color_white:
+    sw $t7, 0($t6)
+    j delete_row_inner_update
+color_grey:
+    sw $t5, 0($t6)    
+delete_row_inner_update:
+    addi $t6, $t6, 4
+    j Delete_row_inner_loop
+    
+exit_delete_row_inner_loop:
+    subi $s7, $s7, 1
+    mul $t6, $s7, 128
+    addi $t6, $t6, 12
+    add $t6, $t0, $t6
+    
+    addi $t8, $t6, 100
+    j Delete_row_outer_loop
+    
+exit_delete_row:
+    jr $ra                        
 #########################################
 Row_check:
     lw $t0, ADDR_DSPL
@@ -1202,7 +1269,7 @@ End_game:
     #syscall
     
     jr $ra           
-#########################################  
+######################################### 
 
 ##############################################################################
 sorted_rows:
@@ -1246,7 +1313,24 @@ no_swap:
 
 
 final:
-    lw $a0, 0($s7)
+    lw $a0, 12($s7)
+    la $a1, max_row
+    lw $a2, 0($a1)
+    ble $a0, $a2, update_max_row
+    j update_final
+    
+update_max_row:
+    sw $a0, 0($a1)
+    
+    li $v0, 1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+update_final: 
+    lw $a0, 0($s7)           
     lw $a1, 12($s7)
     sw $a0, 12($s7)
     sw $a1, 0($s7)
@@ -1310,13 +1394,13 @@ check_loop:
     subi $sp, $sp, 4
     sw $v1, 0($sp)
     
-    li $v0, 1
-    move $a0, $v1
-    syscall
+    #li $v0, 1
+    #move $a0, $v1
+    #syscall
    
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     addi $t4, $t4, 1
     
@@ -1336,13 +1420,13 @@ exit_duplicate_loop:
     sw $s6, 0($sp)
     addi $t4, $t4, 1
     
-    li $v0, 1
-    move $a0, $s6
-    syscall
+    #li $v0, 1
+    #move $a0, $s6
+    #syscall
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     #mul $t4, $t4, 4
     #add $sp, $sp, $t4
@@ -1358,65 +1442,65 @@ calculate_row:
     lw $a0, 0($sp)
     sub $a0, $a0, $t0    #calculate address
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
     div $a0, $t1
     mflo $a0
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
     sw $a0, 0($s0)
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     lw $a0, 4($sp)
     sub $a0, $a0, $t0    #calculate address
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     
     div $a0, $t1
     mflo $a0
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     sw $a0, 4($s0)
     
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     lw $a0, 8($sp)
     sub $a0, $a0, $t0    #calculate address
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     div $a0, $t1
     mflo $a0
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     sw $a0, 8($s0)
-    li $v0, 4
-    la $a0, newline
-    syscall
+    #li $v0, 4
+    #la $a0, newline
+    #syscall
     
     lw $a0, 12($sp)
     sub $a0, $a0, $t0    #calculate address
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     div $a0, $t1
     mflo $a0
     
-    li $v0, 1
-    syscall
+    #li $v0, 1
+    #syscall
     sw $a0, 12($s0)
     
-    li $v0, 4
-    la $a0, newline
-    syscall    
+    #li $v0, 4
+    #la $a0, newline
+    #syscall    
     
     
     jr $ra
