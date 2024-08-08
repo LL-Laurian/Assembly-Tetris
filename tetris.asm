@@ -90,7 +90,7 @@ start:
 
 ##########################################################
 init_shape: 
-   #li $t1, 1  
+   li $t1, 6  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -221,8 +221,22 @@ J_shape:
 
 init_shape_done:
    jal fill_color
+   la $s7, max_row
+   lw $s7, 0($s7)
+   ble $s7, 8, set_100_speed
+   ble $s7, 12, set_150_speed
+   ble $s7, 20, set_200_speed
    li $a2, 400
-
+   j speed
+set_100_speed:
+   li $a2, 100
+   j speed  
+set_150_speed:
+   li $a2, 150
+   j speed
+set_200_speed:
+   li $a2, 200
+   j speed       
    #######################################################
    ###############################################################################
 speed:
@@ -395,7 +409,7 @@ respond_to_W:
 
 respond_to_S:
     addi $a2, $a2, -100
-    bge $a2, 100, Auto_drop
+    bge $a2, 50, Auto_drop
     addi $a2, $a2, 100
     j Auto_drop
 
@@ -923,13 +937,49 @@ T_shape_drop:
     li $t9, 0x8A8F9A       # wall
     lw $a1, 0($sp)
     
-    addi $s1, $a1, 128     # check if right is still part of tetris
-    lw $t4, 4($sp)
-    bne $t4, $s1, T_pos_4_drop
+    lw $a0, 0($sp)
+    li $v0, 1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    lw $a0, 4($sp)
+    li $v0, 1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    lw $a0, 8($sp)
+    li $v0, 1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    lw $a0, 12($sp)
+    li $v0, 1
+    syscall
+    
+    li $v0, 4
+    la $a0, newline
+    syscall
+        
+    li $v0, 4
+    la $a0, newline
+    syscall
+    
+    addi $s1, $a1, 256     # check if right is still part of tetris
+    lw $t4, 8($sp)
+    beq $t4, $s1, T_pos_4_drop
     
     addi $s1, $a1, 4     # check if right down is still part of tetris
     lw $t4, 4($sp)
-    bne $t4, $s1, T_pos_1_drop
+    beq $t4, $s1, T_pos_1_drop
     
     addi $s1, $a1, 132     # check if right is still part of tetris
     lw $t4, 12($sp)
@@ -937,6 +987,10 @@ T_shape_drop:
     j T_pos_3_drop
     
 T_pos_1_drop:
+    #li $v0, 11
+    #li $a0, 'a'
+    #syscall
+    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -944,12 +998,19 @@ T_pos_1_drop:
    
                             
 T_pos_2_drop:
+    #li $v0, 11
+    #li $a0, 'b'
+    #syscall
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
 
       
-T_pos_3_drop:     
+T_pos_3_drop: 
+    #li $v0, 11
+    #li $a0, 'c'
+    #syscall
+        
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -957,6 +1018,10 @@ T_pos_3_drop:
 
     
 T_pos_4_drop:
+    #li $v0, 11
+    #li $a0, 'd'
+    #syscall
+    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
