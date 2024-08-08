@@ -48,6 +48,7 @@ numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
 max_row: .word 30
 change_shape_chance: .word 3
+Mark: .word 0
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -71,7 +72,12 @@ main:
     lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     jal init_walls_board   # Call the subroutine to initialize the walls and board
     li $a0, 0xE4DCD1
+    li $a1, 3568
     jal draw_3
+    
+    li $a0, 0xF5C6C6
+    li $a1, 3460
+    jal draw_0
 start:
     lw $t0, ADDR_DSPL
     
@@ -394,29 +400,34 @@ respond_to_S:
     j Auto_drop
 
 respond_to_P:
+    li $a1, 3512
+    li $a0, 0x00000
+    jal draw_p
     lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
     lw $t8, 0($t0)                  # Load first word from keyboard
     beq $t8, 1, check_P
     j respond_to_P
 check_P:
     lw $a0, 4($t0)
-    beq $a0, 0x70, Auto_drop         # If first word 1, key is pressed
+    beq $a0, 0x70, resume
+    beq $a0, 0x71, Terminate          
     j respond_to_P
-
+resume:
+    li $a1, 3512
+    li $a0, 0x8A8F9A
+    jal draw_p
+    j Auto_drop
+    
 respond_to_C:
     la $s7, change_shape_chance
     lw $t1, 0($s7)
-    
-    li $v0, 1
-    move $a0, $t1
-    syscall
     
     beq $t1, 0, Auto_drop
     jal delete_shape
     addi $sp, $sp, 16
     beq $t1, 1, change_to_0
     beq $t1, 2, change_to_1
-    
+    li $a1, 3568
     li $a0, 0x8A8F9A
     jal draw_3
     li $a0, 0xE4DCD1 
@@ -429,6 +440,7 @@ respond_to_C:
     j update_drop_chance
 
 change_to_0:
+    li $a1, 3568
     li $a0, 0x8A8F9A
     jal draw_1
     li $a0, 0xE4DCD1 
@@ -436,18 +448,17 @@ change_to_0:
     j update_drop_chance
      
 change_to_1:
+    li $a1, 3568
     li $a0, 0x8A8F9A
     jal draw_2
     li $a0, 0xE4DCD1 
     jal draw_1
     
 update_drop_chance:
+    li $a1, 3568
     la $s7, change_shape_chance
     lw $t1, 0($s7)
     subi $t1, $t1, 1
-    li $v0, 1
-    move $a0, $t1
-    syscall
     sw $t1, 0($s7)
     j start
                 
@@ -1191,6 +1202,58 @@ check_row_loop:
     beq $a1, -1, Terminate_program
     beq $a1, 0, check_row_loop
     jal Delete_row
+    
+    la $s7, Mark
+    lw $a0, 0($s7)
+    
+check_mark:
+    beq $t1, 0, mark_to_1
+    beq $t1, 1, mark_to_2
+    beq $t1, 2, mark_to_3
+    beq $t1, 3, mark_to_4
+    j delete_update
+
+mark_to_1:
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_0
+    li $a0, 0xF5C6C6 
+    jal draw_1
+    j delete_update
+     
+mark_to_2:
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_1
+    li $a0, 0xF5C6C6 
+    jal draw_2
+    j delete_update
+
+mark_to_3:    
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_2
+    li $a0, 0xF5C6C6 
+    jal draw_3
+    j delete_update
+     
+mark_to_4:    
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_3
+    li $a0, 0xF5C6C6 
+    jal draw_4
+    li $a1, 3460
+    li $a0, 0xF4E5C3
+    jal draw_w
+    j Terminate_program       
+    
+delete_update:
+    la $s7, Mark
+    lw $a0, 0($s7)
+    addi $a0, $a0, 1
+    sw $a0, 0($s7)
+              
     la $s7, row_to_delete
     la $s5, max_row
     lw $s4, 0($s5)
@@ -1660,9 +1723,93 @@ random_shape:
    move $t1, $a0 #random shape of Tetrominoes
    jr $ra
 ##################################################################################
+draw_p:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+
+    jr $ra
+##################################################################################
+draw_w:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    addi $t7, $t6, 392
+    sw $t1, 0($t7)
+    addi $t7, $t6, 396
+    sw $t1, 0($t7)
+    addi $t7, $t6, 264
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 16
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+
+    jr $ra
+################################################################################## 
+draw_4:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################    
 draw_3:
     lw $t0, ADDR_DSPL
-    addi $t6, $t0, 3568
+    add $t6, $t0, $a1
     move $t1, $a0
     sw $t1, 0($t6)
     addi $t7, $t6, 4
@@ -1683,7 +1830,7 @@ draw_3:
 ##################################################################################  
 draw_2:
     lw $t0, ADDR_DSPL
-    addi $t6, $t0, 3568
+    add $t6, $t0, $a1
     move $t1, $a0
     sw $t1, 0($t6)
     addi $t7, $t6, 4
@@ -1704,7 +1851,7 @@ draw_2:
 ################################################################################## 
 draw_1:
     lw $t0, ADDR_DSPL
-    addi $t6, $t0, 3568
+    add $t6, $t0, $a1
     move $t1, $a0
     sw $t1, 0($t6)
     addi $t7, $t6, 128
@@ -1719,7 +1866,7 @@ draw_1:
 ##################################################################################
 draw_0:
     lw $t0, ADDR_DSPL
-    addi $t6, $t0, 3568
+    add $t6, $t0, $a1
     move $t1, $a0
     sw $t1, 0($t6)
     addi $t7, $t6, 4
