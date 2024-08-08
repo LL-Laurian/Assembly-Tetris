@@ -90,7 +90,7 @@ start:
 
 ##########################################################
 init_shape: 
-   li $t1, 6  
+   li $t1, 1  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape
@@ -226,7 +226,7 @@ init_shape_done:
    ble $s7, 8, set_100_speed
    ble $s7, 12, set_150_speed
    ble $s7, 20, set_200_speed
-   li $a2, 400
+   li $a2, 200
    j speed
 set_100_speed:
    li $a2, 100
@@ -937,42 +937,6 @@ T_shape_drop:
     li $t9, 0x8A8F9A       # wall
     lw $a1, 0($sp)
     
-    lw $a0, 0($sp)
-    li $v0, 1
-    syscall
-    
-    li $v0, 4
-    la $a0, newline
-    syscall
-    
-    lw $a0, 4($sp)
-    li $v0, 1
-    syscall
-    
-    li $v0, 4
-    la $a0, newline
-    syscall
-    
-    lw $a0, 8($sp)
-    li $v0, 1
-    syscall
-    
-    li $v0, 4
-    la $a0, newline
-    syscall
-    
-    lw $a0, 12($sp)
-    li $v0, 1
-    syscall
-    
-    li $v0, 4
-    la $a0, newline
-    syscall
-        
-    li $v0, 4
-    la $a0, newline
-    syscall
-    
     addi $s1, $a1, 256     # check if right is still part of tetris
     lw $t4, 8($sp)
     beq $t4, $s1, T_pos_4_drop
@@ -1264,13 +1228,19 @@ check_row_loop:
     la $a0, newline
     syscall
                                                    
-    beq $a1, -1, Terminate_program
+    beq $a1, -1, cross
     beq $a1, 0, check_row_loop
     jal Delete_row
     
     la $s7, Mark
-    lw $a0, 0($s7)
-    
+    lw $t1, 0($s7)
+    #li $v0, 1
+    #syscall
+cross:
+    li $a1, 1584
+    li $a0, 0xFF0000
+    jal draw_x
+    j Terminate_program    
 check_mark:
     beq $t1, 0, mark_to_1
     beq $t1, 1, mark_to_2
@@ -1308,8 +1278,8 @@ mark_to_4:
     jal draw_3
     li $a0, 0xF5C6C6 
     jal draw_4
-    li $a1, 3460
-    li $a0, 0xF4E5C3
+    li $a1, 1592
+    li $a0, 0xFF0000
     jal draw_w
     j Terminate_program       
     
@@ -1333,11 +1303,33 @@ delete_update:
 Terminate_program:
     la $s7, row_to_delete
     la $s5, max_row
-    addi $s7, $s7, 4
-    addi $s5, $s5, 4
+    li $t1, 0
+    sw $t1, 0($s7)
+    li $t1, 30
+    sw $t1, 0($s5)
+    la $s7, change_shape_chance
+    la $s5, Mark
+    li $t1, 0
+    sw $t1, 0($s5)
+    li $t1, 3
+    sw $t1, 0($s7)
     mul $t4, $t4, 4
     add $sp, $sp, $t4
-    j Terminate         
+    
+check_reset:    
+    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
+    lw $t8, 0($t0)                  # Load first word from keyboard
+    beq $t8, 1, check_r
+    j check_reset
+check_r:
+    lw $a0, 4($t0)
+    beq $a0, 0x72, reset
+    beq $a0, 0x71, Terminate          
+    j check_reset
+reset:
+    j main
+    
+    #j Terminate         
     
     #li $v0, 10             # Terminate the program gracefully
     #syscall
@@ -1788,6 +1780,51 @@ random_shape:
    move $t1, $a0 #random shape of Tetrominoes
    jr $ra
 ##################################################################################
+draw_x:
+    lw $t0, ADDR_DSPL  # Load the base address of the display
+    add $t6, $t0, $a1  # Calculate the starting address based on input offset ($a1)
+    move $t1, $a0      # Color value in $a0
+
+    # First diagonal (\)
+    sw $t1, 0($t6)         # (0, 0)
+    addi $t7, $t6, 132     # (1, 1)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (2, 2)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (3, 3)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (4, 4)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (5, 5)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (6, 6)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (7, 7)
+    sw $t1, 0($t7)
+
+    # Second diagonal (/)
+    lw $t0, ADDR_DSPL  # Load the base address of the display
+    add $t6, $t0, $a1
+    addi $t6, $t6, 28      # (7, 0)
+    sw $t1, 0($t6)
+    addi $t7, $t6, 124     # (6, 1)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (5, 2)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (4, 3)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (3, 4)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (2, 5)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (1, 6)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (0, 7)
+    sw $t1, 0($t7)
+
+    jr $ra                # Return from the function
+
+##################################################################################    
 draw_p:
     lw $t0, ADDR_DSPL
     add $t6, $t0, $a1
