@@ -90,7 +90,7 @@ start:
 
 ##########################################################
 init_shape: 
-   li $t1, 1  
+   #li $t1, 1  
    beq $t1, 0, U_shape
    beq $t1, 1, I_shape
    beq $t1, 2, S_shape

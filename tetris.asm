@@ -89,574 +89,561 @@ ADDR_KBRD:
 main:
     lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     jal init_walls_board   # Call the subroutine to initialize the walls and board
-    li $a0, 0xE4DCD1
-    li $a1, 3568
-    jal draw_3
+    li $a0, 0xE4DCD1       # Load color value (Morandi Pink) into $a0
+    li $a1, 3568           # Set position offset for drawing '3' into $a1
+    jal draw_3             # Call the subroutine to draw '3'
     
-    li $a0, 0xF5C6C6
-    li $a1, 3460
-    jal draw_0
+    li $a0, 0xF5C6C6       # Load color value (another shade of Morandi Pink) into $a0
+    li $a1, 3460           # Set position offset for drawing '0' into $a1
+    jal draw_0             # Call the subroutine to draw '0'
+
 start:
-    lw $t0, ADDR_DSPL
+    lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     
-    jal random_shape
+    jal random_shape       # Call the subroutine to select a random shape
     
-    addi $t6, $t0, 64      # intially set t6 to be in the middle
-    li $t3, 16             # $t3 is x index of the left-most grid; intially 16
-    j init_shape
-##############################################################################  
+    addi $t6, $t0, 64      # Initially set $t6 to be in the middle of the display
+    li $t3, 16             # Set $t3 as x index of the left-most grid; initially 16
+    j init_shape           # Jump to the subroutine to initialize the selected shape
 
 ##########################################################
+
 init_shape: 
-   li $t1, 1  
-   beq $t1, 0, U_shape
-   beq $t1, 1, I_shape
-   beq $t1, 2, S_shape
-   beq $t1, 3, Z_shape
-   beq $t1, 4, L_shape
-   beq $t1, 5, J_shape
+    li $t1, 5
+    beq $t1, 0, U_shape    # Branch to U_shape if $t1 is 0
+    beq $t1, 1, I_shape    # Branch to I_shape if $t1 is 1
+    beq $t1, 2, S_shape    # Branch to S_shape if $t1 is 2
+    beq $t1, 3, Z_shape    # Branch to Z_shape if $t1 is 3
+    beq $t1, 4, L_shape    # Branch to L_shape if $t1 is 4
+    beq $t1, 5, J_shape    # Branch to J_shape if $t1 is 5
    
-   li $a0, 0x8D6E99
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 8
-   sw $t9, 12($sp)
-   j init_shape_done
-   
-    
-U_shape:
-    li $a0, 0xD9A867
-    subi $sp, $sp, 16
-   
+    li $a0, 0x8D6E99       # Load color value into $a0
+    subi $sp, $sp, 16      # Adjust stack pointer
+
+    # Store the coordinates of the shape in memory
     addi $t9, $t6, 0
     sw $t9, 0($sp)
-   
+    addi $t9, $t6, 4
+    sw $t9, 4($sp)
+    addi $t9, $t6, 132
+    sw $t9, 8($sp)
+    addi $t9, $t6, 8
+    sw $t9, 12($sp)
+    j init_shape_done      # Jump to the completion section
+
+U_shape:
+    li $a0, 0xD9A867       # Load color value for U shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the U shape in memory
+    addi $t9, $t6, 0
+    sw $t9, 0($sp)
     addi $t9, $t6, 128
     sw $t9, 4($sp)
-   
     addi $t9, $t6, 4
     sw $t9, 8($sp)
-   
     addi $t9, $t6, 132
     sw $t9, 12($sp)
-    j init_shape_done 
-       
+    j init_shape_done      # Jump to the completion section
+
 I_shape:
-    li $a0, 0x003D6B
-    subi $sp, $sp, 16
-   
+    li $a0, 0x003D6B       # Load color value for I shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the I shape in memory
     addi $t9, $t6, 0
     sw $t9, 0($sp)
-   
     addi $t9, $t6, 128
     sw $t9, 4($sp)
-   
     addi $t9, $t6, 256
     sw $t9, 8($sp)
-   
     addi $t9, $t6, 384
     sw $t9, 12($sp)
-    j init_shape_done
-    
+    j init_shape_done      # Jump to the completion section
+
 S_shape:
-    li $a0, 0xB26666
-    subi $sp, $sp, 16
-   
+    li $a0, 0xB26666       # Load color value for S shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the S shape in memory
     addi $t9, $t6, 128
     sw $t9, 0($sp)
-   
     addi $t9, $t6, 4
     sw $t9, 4($sp)
-   
     addi $t9, $t6, 8
     sw $t9, 8($sp)
-   
-   addi $t9, $t6, 132
-   sw $t9, 12($sp)
-   j init_shape_done
-   
-    
+    addi $t9, $t6, 132
+    sw $t9, 12($sp)
+    j init_shape_done      # Jump to the completion section
+
 Z_shape:
-   li $a0, 0x7C8A73
-   
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 136
-   sw $t9, 12($sp)
-   j init_shape_done
-      
-       
+    li $a0, 0x7C8A73       # Load color value for Z shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the Z shape in memory
+    addi $t9, $t6, 0
+    sw $t9, 0($sp)
+    addi $t9, $t6, 4
+    sw $t9, 4($sp)
+    addi $t9, $t6, 132
+    sw $t9, 8($sp)
+    addi $t9, $t6, 136
+    sw $t9, 12($sp)
+    j init_shape_done      # Jump to the completion section
+
 L_shape:
-   li $a0, 0xC97A53
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 0
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 128
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 256
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 260
-   sw $t9, 12($sp)
-   j init_shape_done
-   
+    li $a0, 0xC97A53       # Load color value for L shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the L shape in memory
+    addi $t9, $t6, 0
+    sw $t9, 0($sp)
+    addi $t9, $t6, 128
+    sw $t9, 4($sp)
+    addi $t9, $t6, 256
+    sw $t9, 8($sp)
+    addi $t9, $t6, 260
+    sw $t9, 12($sp)
+    j init_shape_done      # Jump to the completion section
+
 J_shape:
-   li $a0, 0xE26B8A
-   subi $sp, $sp, 16
-   
-   addi $t9, $t6, 256
-   sw $t9, 0($sp)
-   
-   addi $t9, $t6, 4
-   sw $t9, 4($sp)
-   
-   addi $t9, $t6, 132
-   sw $t9, 8($sp)
-   
-   addi $t9, $t6, 260
-   sw $t9, 12($sp)
+    li $a0, 0xE26B8A       # Load color value for J shape
+    subi $sp, $sp, 16      # Adjust stack pointer
+    
+    # Store the coordinates of the J shape in memory
+    addi $t9, $t6, 256
+    sw $t9, 0($sp)
+    addi $t9, $t6, 4
+    sw $t9, 4($sp)
+    addi $t9, $t6, 132
+    sw $t9, 8($sp)
+    addi $t9, $t6, 260
+    sw $t9, 12($sp)
 
 init_shape_done:
-   jal fill_color
-   la $s7, max_row
-   lw $s7, 0($s7)
-   ble $s7, 8, set_50_speed
-   ble $s7, 12, set_100_speed
-   ble $s7, 20, set_150_speed
-   li $a2, 200
-   j speed
-set_50_speed:
-   li $a2, 50
-   j speed  
-set_100_speed:
-   li $a2, 100
-   j speed
-set_150_speed:
-   li $a2, 150
-   j speed       
-   #######################################################
-   ###############################################################################
-speed:
-    	li 		$v0, 32
-	move 		$a0, $a2
-	syscall
+    jal fill_color          # Call the subroutine to fill the shape with the specified color
+    la $s7, max_row         # Load the address of max_row into $s7
+    lw $s7, 0($s7)          # Load the value of max_row into $s7
+    ble $s7, 8, set_50_speed    # Set speed to 50 if max_row is less than or equal to 8
+    ble $s7, 12, set_100_speed  # Set speed to 100 if max_row is less than or equal to 12
+    ble $s7, 20, set_150_speed  # Set speed to 150 if max_row is less than or equal to 20
+    li $a2, 200             # Default speed value
+    j speed                 # Jump to speed section
 
+set_50_speed:
+    li $a2, 50              # Set speed to 50
+    j speed                 # Jump to speed section
+
+set_100_speed:
+    li $a2, 100             # Set speed to 100
+    j speed                 # Jump to speed section
+
+set_150_speed:
+    li $a2, 150             # Set speed to 150
+    j speed                 # Jump to speed section
+       
+#######################################################
+###############################################################################
+speed:
+    li $v0, 32            # Set the system call code for sleep
+    move $a0, $a2         # Move the sleep duration into $a0
+    syscall               # Make the system call to sleep
 
 keyboard:
-    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
-    lw $t8, 0($t0)                  # Load first word from keyboard
-    beq $t8, 1, keyboard_input      # If first word 1, key is pressed
-    b Auto_drop
+    lw $t0, ADDR_KBRD               # Load the base address for the keyboard into $t0
+    lw $t8, 0($t0)                  # Load the first word from the keyboard address into $t8
+    beq $t8, 1, keyboard_input      # If $t8 is 1, a key is pressed, jump to keyboard_input
+    b Auto_drop                     # Otherwise, jump to Auto_drop
 
 keyboard_input:                     # A key is pressed
-    lw $a0, 4($t0)                  # Load second word from keyboard
-    beq $a0, 0x71, Terminate        # Check if the key q was pressed
-    beq $a0, 0x77, respond_to_W     # Check if the key w was pressed
-    beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
-    beq $a0, 0x64, respond_to_D
-    beq $a0, 0x73, respond_to_S
-    beq $a0, 0x70, respond_to_P
-    beq $a0, 0x63, respond_to_C
-
-    b Auto_drop
+    lw $a0, 4($t0)                  # Load the second word from the keyboard address into $a0
+    beq $a0, 0x71, Terminate        # If 'q' key is pressed, jump to Terminate
+    beq $a0, 0x77, respond_to_W     # If 'w' key is pressed, jump to respond_to_W
+    beq $a0, 0x61, respond_to_A     # If 'a' key is pressed, jump to respond_to_A
+    beq $a0, 0x64, respond_to_D     # If 'd' key is pressed, jump to respond_to_D
+    beq $a0, 0x73, respond_to_S     # If 's' key is pressed, jump to respond_to_S
+    beq $a0, 0x70, respond_to_P     # If 'p' key is pressed, jump to respond_to_P
+    beq $a0, 0x63, respond_to_C     # If 'c' key is pressed, jump to respond_to_C
+    b Auto_drop                     # Otherwise, jump to Auto_drop
 
 respond_to_A:
-    li $t9, 0x8A8F9A       # wall
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
-    lw $a1, 0($sp)
-    lw $s0, 0($sp)
-    lw $s4, 4($sp)
-    lw $s2, 8($sp)
-    lw $s3, 12($sp)
-    li $t2, 1
-    
+    li $t9, 0x8A8F9A       # Wall color
+    li $t5, 0xE4DCD1       # Grey color
+    li $t7, 0xC5CCD6       # White color
+    lw $a1, 0($sp)         # Load the first word from stack into $a1
+    lw $s0, 0($sp)         # Load the first word from stack into $s0
+    lw $s4, 4($sp)         # Load the second word from stack into $s4
+    lw $s2, 8($sp)         # Load the third word from stack into $s2
+    lw $s3, 12($sp)        # Load the fourth word from stack into $s3
+    li $t2, 1              # Initialize $t2 to 1
+
 check_left_obstacle:
-    beq $t2, 4, left_movement_update    
-    subi $s1, $a1, 4
-    bne $s1, $s0, check_second_left
-    j check_left_obstacle_update
-    
+    beq $t2, 4, left_movement_update    # If $t2 == 4, jump to left_movement_update
+    subi $s1, $a1, 4                    # Subtract 4 from $a1 and store in $s1
+    bne $s1, $s0, check_second_left     # If $s1 != $s0, jump to check_second_left
+    j check_left_obstacle_update        # Otherwise, jump to check_left_obstacle_update
+
 check_second_left:
-    bne $s1, $s4, check_third_left
-    j check_left_obstacle_update
-    
+    bne $s1, $s4, check_third_left      # If $s1 != $s4, jump to check_third_left
+    j check_left_obstacle_update        # Otherwise, jump to check_left_obstacle_update
+
 check_third_left:
-    bne $s1, $s2, check_fourth_left
-    j check_left_obstacle_update
-    
+    bne $s1, $s2, check_fourth_left     # If $s1 != $s2, jump to check_fourth_left
+    j check_left_obstacle_update        # Otherwise, jump to check_left_obstacle_update
+
 check_fourth_left:
-    bne $s1, $s3, check_left_color
-    j check_left_obstacle_update
-    
+    bne $s1, $s3, check_left_color      # If $s1 != $s3, jump to check_left_color
+    j check_left_obstacle_update        # Otherwise, jump to check_left_obstacle_update
+
 check_left_color:                    
-    lw $t4, 0($s1)
-    bne $t4, $t5, left_move_further_check
-    j check_left_obstacle_update
-    
+    lw $t4, 0($s1)                      # Load the word from address $s1 into $t4
+    bne $t4, $t5, left_move_further_check  # If $t4 != $t5, jump to left_move_further_check
+    j check_left_obstacle_update        # Otherwise, jump to check_left_obstacle_update
+
 left_move_further_check:   
-    bne $t4, $t7, Auto_drop    # check left most touches the wall
+    bne $t4, $t7, Auto_drop             # If $t4 != $t7, jump to Auto_drop
 
 check_left_obstacle_update:
-    mul $s1, $t2, 4
-    add $a1, $sp, $s1
-    addi $t2, $t2, 1
-    lw $a1, 0($a1)
-    j check_left_obstacle   
+    mul $s1, $t2, 4                     # Multiply $t2 by 4 and store in $s1
+    add $a1, $sp, $s1                   # Add $sp and $s1 and store in $a1
+    addi $t2, $t2, 1                    # Increment $t2 by 1
+    lw $a1, 0($a1)                      # Load the word from address $a1 into $a1
+    j check_left_obstacle               # Jump to check_left_obstacle   
 
 left_movement_update:    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    subi $s0, $s0, 4    # move left
+    lw $s0, 0($sp)      # Load the first word from stack into $s0
+    lw $t3, 0($s0)      # Load the word from address $s0 into $t3
+    subi $s0, $s0, 4    # Subtract 4 from $s0
     
-    lw $s4, 4($sp)      # move left
-    subi $s4, $s4, 4     # Store address at 4($sp)
+    lw $s4, 4($sp)      # Load the second word from stack into $s4
+    subi $s4, $s4, 4    # Subtract 4 from $s4
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    subi $s2, $s2, 4    # move left
+    lw $s2, 8($sp)      # Load the third word from stack into $s2
+    subi $s2, $s2, 4    # Subtract 4 from $s2
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    subi $s3, $s3, 4    # move left
+    lw $s3, 12($sp)     # Load the fourth word from stack into $s3
+    subi $s3, $s3, 4    # Subtract 4 from $s3
    
-    j keyboard_update
+    j keyboard_update   # Jump to keyboard_update
 
 respond_to_D:
-    li $t9, 0x8A8F9A       # wall
-    li $t5, 0xE4DCD1       # grey color
-    li $t7, 0xC5CCD6       # white color
-    lw $a1, 12($sp)
-    lw $s0, 0($sp)
-    lw $s4, 4($sp)
-    lw $s2, 8($sp)
-    lw $s3, 12($sp)
-    li $t2, 2
-    
+    li $t9, 0x8A8F9A       # Wall color
+    li $t5, 0xE4DCD1       # Grey color
+    li $t7, 0xC5CCD6       # White color
+    lw $a1, 12($sp)        # Load the fourth word from stack into $a1
+    lw $s0, 0($sp)         # Load the first word from stack into $s0
+    lw $s4, 4($sp)         # Load the second word from stack into $s4
+    lw $s2, 8($sp)         # Load the third word from stack into $s2
+    lw $s3, 12($sp)        # Load the fourth word from stack into $s3
+    li $t2, 2              # Initialize $t2 to 2
+
 check_right_obstacle:
-    beq $t2, -1, right_movement_update    
-    addi $s1, $a1, 4
-    bne $s1, $s0, check_second_right
-    j check_right_obstacle_update
-    
+    beq $t2, -1, right_movement_update    # If $t2 == -1, jump to right_movement_update
+    addi $s1, $a1, 4                      # Add 4 to $a1 and store in $s1
+    bne $s1, $s0, check_second_right      # If $s1 != $s0, jump to check_second_right
+    j check_right_obstacle_update         # Otherwise, jump to check_right_obstacle_update
+
 check_second_right:
-    bne $s1, $s4, check_third_right
-    j check_right_obstacle_update
-    
+    bne $s1, $s4, check_third_right       # If $s1 != $s4, jump to check_third_right
+    j check_right_obstacle_update         # Otherwise, jump to check_right_obstacle_update
+
 check_third_right:
-    bne $s1, $s2, check_fourth_right
-    j check_right_obstacle_update
-    
+    bne $s1, $s2, check_fourth_right      # If $s1 != $s2, jump to check_fourth_right
+    j check_right_obstacle_update         # Otherwise, jump to check_right_obstacle_update
+
 check_fourth_right:
-    bne $s1, $s3, check_right_color
-    j check_right_obstacle_update
-    
+    bne $s1, $s3, check_right_color       # If $s1 != $s3, jump to check_right_color
+    j check_right_obstacle_update         # Otherwise, jump to check_right_obstacle_update
+
 check_right_color:                    
-    lw $t4, 0($s1)
-    bne $t4, $t5, right_move_further_check
-    j check_right_obstacle_update
-    
+    lw $t4, 0($s1)                        # Load the word from address $s1 into $t4
+    bne $t4, $t5, right_move_further_check  # If $t4 != $t5, jump to right_move_further_check
+    j check_right_obstacle_update         # Otherwise, jump to check_right_obstacle_update
+
 right_move_further_check:   
-    bne $t4, $t7, Auto_drop    # check left most touches the wall
+    bne $t4, $t7, Auto_drop               # If $t4 != $t7, jump to Auto_drop
 
 check_right_obstacle_update:
-    mul $s1, $t2, 4
-    add $a1, $sp, $s1
-    subi $t2, $t2, 1
-    lw $a1, 0($a1)
-    j check_right_obstacle   
+    mul $s1, $t2, 4                       # Multiply $t2 by 4 and store in $s1
+    add $a1, $sp, $s1                     # Add $sp and $s1 and store in $a1
+    addi $t2, $t2, -1                     # Decrement $t2 by 1
+    lw $a1, 0($a1)                        # Load the word from address $a1 into $a1
+    j check_right_obstacle                # Jump to check_right_obstacle   
 
-right_movement_update:  
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    lw $t3, 0($s0)      # store color
-    addi $s0, $s0, 4    # move left
+right_movement_update:    
+    lw $s0, 0($sp)      # Load the first word from stack into $s0
+    lw $t3, 0($s0)      # Load the word from address $s0 into $t3
+    addi $s0, $s0, 4    # Add 4 to $s0
     
-    lw $s4, 4($sp)      # move left
-    addi $s4, $s4, 4     # Store address at 4($sp)
+    lw $s4, 4($sp)      # Load the second word from stack into $s4
+    addi $s4, $s4, 4    # Add 4 to $s4
     
-    lw $s2, 8($sp)      # Store address at 8($sp)
-    addi $s2, $s2, 4    # move left
+    lw $s2, 8($sp)      # Load the third word from stack into $s2
+    addi $s2, $s2, 4    # Add 4 to $s2
     
-    lw $s3, 12($sp)     # Store address at 12($sp)
-    addi $s3, $s3, 4    # move left
-    
-    j keyboard_update
+    lw $s3, 12($sp)     # Load the fourth word from stack into $s3
+    addi $s3, $s3, 4    # Add 4 to $s3
+   
+    j keyboard_update   # Jump to keyboard_update
     
 respond_to_W:
-    li $t3, 0xD9A867 #U-shape
-    lw $a1, 0($sp)
-    lw $t4, 0($a1)
-    beq $t4, $t3, speed
+    li $t3, 0xD9A867         # Load the U-shape color code into $t3
+    lw $a1, 0($sp)           # Load the first word from stack into $a1
+    lw $t4, 0($a1)           # Load the word from address $a1 into $t4
+    beq $t4, $t3, speed      # If $t4 equals U-shape color, jump to speed
 
-    li $t3, 0x003D6B  #I-shape
-    beq $t4, $t3, I_shape_rot
+    li $t3, 0x003D6B         # Load the I-shape color code into $t3
+    beq $t4, $t3, I_shape_rot # If $t4 equals I-shape color, jump to I_shape_rot
 
-    li $t3, 0xB26666  #S-shape
-    beq $t4, $t3, S_shape_rot
- 
-    li $t3, 0x7C8A73  #Z-shape
-    beq $t4, $t3, Z_shape_rot
-    
-    li $t3, 0xC97A53  #L-shape
-    beq $t4, $t3, L_shape_rot
-    
-    li $t3, 0xE26B8A  #J-shape
-    beq $t4, $t3, J_shape_rot
-    
-    li $t3, 0x8D6E99
-    j T_shape_rot
+    li $t3, 0xB26666         # Load the S-shape color code into $t3
+    beq $t4, $t3, S_shape_rot # If $t4 equals S-shape color, jump to S_shape_rot
+
+    li $t3, 0x7C8A73         # Load the Z-shape color code into $t3
+    beq $t4, $t3, Z_shape_rot # If $t4 equals Z-shape color, jump to Z_shape_rot
+
+    li $t3, 0xC97A53         # Load the L-shape color code into $t3
+    beq $t4, $t3, L_shape_rot # If $t4 equals L-shape color, jump to L_shape_rot
+
+    li $t3, 0xE26B8A         # Load the J-shape color code into $t3
+    beq $t4, $t3, J_shape_rot # If $t4 equals J-shape color, jump to J_shape_rot
+
+    li $t3, 0x8D6E99         # Load the T-shape color code into $t3
+    j T_shape_rot            # Jump to T_shape_rot
 
 respond_to_S:
-    addi $a2, $a2, -50
-    bge $a2, 50, Auto_drop
-    addi $a2, $a2, 50
-    j Auto_drop
+    addi $a2, $a2, -50       # Decrease the sleep duration by 50
+    bge $a2, 50, Auto_drop   # If $a2 is greater than or equal to 50, jump to Auto_drop
+    addi $a2, $a2, 50        # Restore the original sleep duration
+    j Auto_drop              # Jump to Auto_drop
 
 respond_to_P:
-    li $a1, 3512
-    li $a0, 0x00000
-    jal draw_p
-    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
-    lw $t8, 0($t0)                  # Load first word from keyboard
-    beq $t8, 1, check_P
-    j respond_to_P
+    li $a1, 3512             # Load value 3512 into $a1
+    li $a0, 0x00000          # Load value 0x00000 into $a0
+    jal draw_p               # Jump and link to draw_p
+    lw $t0, ADDR_KBRD        # Load the base address for the keyboard into $t0
+    lw $t8, 0($t0)           # Load the first word from the keyboard address into $t8
+    beq $t8, 1, check_P      # If $t8 is 1, a key is pressed, jump to check_P
+    j respond_to_P           # Otherwise, jump to respond_to_P
+
 check_P:
-    lw $a0, 4($t0)
-    beq $a0, 0x70, resume
-    beq $a0, 0x71, Terminate          
-    j respond_to_P
+    lw $a0, 4($t0)           # Load the second word from the keyboard address into $a0
+    beq $a0, 0x70, resume    # If 'p' key is pressed, jump to resume
+    beq $a0, 0x71, Terminate # If 'q' key is pressed, jump to Terminate
+    j respond_to_P           # Otherwise, jump to respond_to_P
+
 resume:
-    li $a1, 3512
-    li $a0, 0x8A8F9A
-    jal draw_p
-    j Auto_drop
-    
+    li $a1, 3512             # Load value 3512 into $a1
+    li $a0, 0x8A8F9A         # Load wall color into $a0
+    jal draw_p               # Jump and link to draw_p
+    j Auto_drop              # Jump to Auto_drop
+
 respond_to_C:
-    la $s7, change_shape_chance
-    lw $t1, 0($s7)
-    
-    beq $t1, 0, Auto_drop
-    jal delete_shape
-    addi $sp, $sp, 16
-    beq $t1, 1, change_to_0
-    beq $t1, 2, change_to_1
-    li $a1, 3568
-    li $a0, 0x8A8F9A
-    jal draw_3
-    li $a0, 0xE4DCD1 
-    jal draw_2
-    
-    li $v0, 11
-    li $a0, 'a'
-    syscall
-    
-    j update_drop_chance
+    la $s7, change_shape_chance # Load address of change_shape_chance into $s7
+    lw $t1, 0($s7)           # Load the value of change_shape_chance into $t1
+
+    beq $t1, 0, Auto_drop    # If $t1 is 0, jump to Auto_drop
+    jal delete_shape         # Jump and link to delete_shape
+    addi $sp, $sp, 16        # Add 16 to the stack pointer
+    beq $t1, 1, change_to_0  # If $t1 is 1, jump to change_to_0
+    beq $t1, 2, change_to_1  # If $t1 is 2, jump to change_to_1
+    li $a1, 3568             # Load value 3568 into $a1
+    li $a0, 0x8A8F9A         # Load wall color into $a0
+    jal draw_3               # Jump and link to draw_3
+    li $a0, 0xE4DCD1         # Load grey color into $a0
+    jal draw_2               # Jump and link to draw_2
+
+    j update_drop_chance     # Jump to update_drop_chance
 
 change_to_0:
-    li $a1, 3568
-    li $a0, 0x8A8F9A
-    jal draw_1
-    li $a0, 0xE4DCD1 
-    jal draw_0
-    j update_drop_chance
-     
+    li $a1, 3568             # Load value 3568 into $a1
+    li $a0, 0x8A8F9A         # Load wall color into $a0
+    jal draw_1               # Jump and link to draw_1
+    li $a0, 0xE4DCD1         # Load grey color into $a0
+    jal draw_0               # Jump and link to draw_0
+    j update_drop_chance     # Jump to update_drop_chance
+
 change_to_1:
-    li $a1, 3568
-    li $a0, 0x8A8F9A
-    jal draw_2
-    li $a0, 0xE4DCD1 
-    jal draw_1
-    
+    li $a1, 3568             # Load value 3568 into $a1
+    li $a0, 0x8A8F9A         # Load wall color into $a0
+    jal draw_2               # Jump and link to draw_2
+    li $a0, 0xE4DCD1         # Load grey color into $a0
+    jal draw_1               # Jump and link to draw_1
+
 update_drop_chance:
-    li $a1, 3568
-    la $s7, change_shape_chance
-    lw $t1, 0($s7)
-    subi $t1, $t1, 1
-    sw $t1, 0($s7)
-    j start
-                
-              
+    li $a1, 3568             # Load value 3568 into $a1
+    la $s7, change_shape_chance # Load address of change_shape_chance into $s7
+    lw $t1, 0($s7)           # Load the value of change_shape_chance into $t1
+    subi $t1, $t1, 1         # Subtract 1 from $t1
+    sw $t1, 0($s7)           # Store the updated value back to change_shape_chance
+    j start                  # Jump to start
+
 Terminate:
-    la $s0, numbers
-    addi $s0, $s0, 16
-    
-    la $s0, row_to_delete
-    addi $s0, $s0, 4
-    
-    la $s0, max_row
-    addi $s0, $s0, 4
-    
-    la $s0, change_shape_chance
-    addi $s0, $s0, 4
-    
-    la $s0, Mark
-    addi $s0, $s0, 4
-    
-    li $v0, 10             # Terminate the program gracefully
-    syscall    
+    la $s0, numbers          # Load address of numbers into $s0
+    addi $s0, $s0, 16        # Add 16 to $s0
+
+    la $s0, row_to_delete    # Load address of row_to_delete into $s0
+    addi $s0, $s0, 4         # Add 4 to $s0
+
+    la $s0, max_row          # Load address of max_row into $s0
+    addi $s0, $s0, 4         # Add 4 to $s0
+
+    la $s0, change_shape_chance # Load address of change_shape_chance into $s0
+    addi $s0, $s0, 4         # Add 4 to $s0
+
+    la $s0, Mark             # Load address of Mark into $s0
+    addi $s0, $s0, 4         # Add 4 to $s0
+
+    li $v0, 10               # Load system call code for exit into $v0
+    syscall                  # Make the system call to terminate the program
 
 ###################################
 #ROTATION
+# I-shape rotation handling
 I_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, I_pos_1
-    j I_pos_2
-    
-I_pos_1:    
-    addi $s1, $a1, 12
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-   
-    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 4
-    addi $s2, $s0, 8    
-    addi $s3, $s0, 12    
-    j keyboard_update               
-                              
-I_pos_2:    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 128
-    addi $s2, $s0, 256    
-    addi $s3, $s0, 384   
-    j keyboard_update
-    
+    li $t9, 0x8A8F9A       # Wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 128     # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t3, I_pos_1  # If the value matches, go to position 1
+    j I_pos_2              # Otherwise, go to position 2
+
+I_pos_1:
+    addi $s1, $a1, 12      # Calculate address for the rightmost position
+    lw $t4, 0($s1)         # Load value at the rightmost position
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s4, $s0, 4       # Update positions
+    addi $s2, $s0, 8
+    addi $s3, $s0, 12
+    j keyboard_update      # Update the game state
+
+I_pos_2:
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s4, $s0, 128     # Update positions
+    addi $s2, $s0, 256
+    addi $s3, $s0, 384
+    j keyboard_update      # Update the game state
+
 ######################################
 
+# S-shape rotation handling
 S_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, S_pos_2
-    
-S_pos_1:    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s0, $s0, 128
-    addi $s4, $s0, 128
-    addi $s2, $s0, 132    
-    addi $s3, $s0, 260    
-    j keyboard_update               
-                              
-S_pos_2:    
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s0, $s0, 128
+    li $t9, 0x8A8F9A       # Wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 128     # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t3, S_pos_2  # If the value matches, go to position 2
+
+S_pos_1:
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    subi $s0, $s0, 128     # Calculate address for the next position
+    addi $s4, $s0, 128     # Update positions
+    addi $s2, $s0, 132
+    addi $s3, $s0, 260
+    j keyboard_update      # Update the game state
+
+S_pos_2:
+    addi $s1, $a1, 8       # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s0, $s0, 128     # Update positions
     subi $s4, $s0, 124
-    addi $s2, $s0, 4    
-    subi $s3, $s0, 120   
-    j keyboard_update
-    
+    addi $s2, $s0, 4
+    subi $s3, $s0, 120
+    j keyboard_update      # Update the game state
+
 ######################################### 
+
+# Z-shape rotation handling
 Z_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128
-    lw $t4, 0($s1)
-    beq $t4, $t3, Z_pos_2
-    
-Z_pos_1:    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s0, $s0, 128
-    addi $s4, $s0, 128
-    subi $s2, $s0, 124    
-    addi $s3, $s0, 4    
-    j keyboard_update               
-                              
-Z_pos_2:    
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-    
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s0, $s0, 128
+    li $t9, 0x8A8F9A       # Wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 128     # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t3, Z_pos_2  # If the value matches, go to position 2
+
+Z_pos_1:
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s0, $s0, 128     # Calculate address for the next position
+    addi $s4, $s0, 128     # Update positions
+    subi $s2, $s0, 124
+    addi $s3, $s0, 4
+    j keyboard_update      # Update the game state
+
+Z_pos_2:
+    addi $s1, $a1, 8       # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    subi $s0, $s0, 128     # Update positions
     addi $s4, $s0, 4
-    addi $s2, $s0, 132    
-    addi $s3, $s0, 136   
-    j keyboard_update
-    
+    addi $s2, $s0, 132
+    addi $s3, $s0, 136
+    j keyboard_update      # Update the game state
+
 ##########################################
 
+# L-shape rotation handling
 L_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128     # check if below is still part of tetris
-    lw $t4, 0($s1)
+    li $t9, 0x8A8F9A       # Wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 128     # Calculate address for the next position
+    lw $t4, 0($s1)         # Check if below is still part of Tetris
     beq $t4, $t3, L_pos_1_2
-    
-    addi $s1, $a1, 132     # check if below is still part of tetris
-    lw $t4, 0($s1)
+
+    addi $s1, $a1, 132     # Check if below is still part of Tetris
+    lw $t4, 0($s1)         # Load value at the calculated position
     beq $t4, $t3, L_pos_3
-    j L_pos_4
-    
+    j L_pos_4              # Otherwise, go to position 4
+
 L_pos_1_2:
-    addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 0($s1)
+    addi $s1, $a1, 4       # Check if right is still part of Tetris
+    lw $t4, 0($s1)         # Load value at the calculated position
     beq $t4, $t3, L_pos_2
-    j L_pos_1
-    
+    j L_pos_1              # Otherwise, go to position 1
+
 L_pos_1:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-        
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 128
-    addi $s2, $s0, 4    
-    addi $s3, $s0, 8    
-    j keyboard_update               
-                              
-L_pos_2:   
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 4
-    addi $s2, $s0, 132    
-    addi $s3, $s0, 260   
-    j keyboard_update
-        
+    addi $s1, $a1, 8       # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s4, $s0, 128     # Update positions
+    addi $s2, $s0, 4
+    addi $s3, $s0, 8
+    j keyboard_update      # Update the game state
+
+L_pos_2:
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s4, $s0, 4       # Update positions
+    addi $s2, $s0, 132
+    addi $s3, $s0, 260
+    j keyboard_update      # Update the game state
+
 L_pos_3:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-        
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s0, $s0, 128
+    addi $s1, $a1, 8       # Calculate address for the next position
+    lw $t4, 0($s1)         # Load value at the calculated position
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    addi $s0, $s0, 128     # Update positions
     addi $s4, $s0, 4
-    subi $s2, $s0, 120    
-    addi $s3, $s0, 8    
-    j keyboard_update 
-    
-L_pos_4:   
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s0, $s0, 128
+    subi $s2, $s0, 120
+    addi $s3, $s0, 8
+    j keyboard_update      # Update the game state
+
+L_pos_4:
+    lw $s0, 0($sp)         # Store address at 0($sp)
+    subi $s0, $s0, 128     # Update positions
     addi $s4, $s0, 128
-    addi $s2, $s0, 256    
-    addi $s3, $s0, 260   
-    j keyboard_update          
+    addi $s2, $s0, 256
+    addi $s3, $s0, 260
+    j keyboard_update      # Update the game state
+         
 
 ##########################################
 
@@ -753,7 +740,7 @@ T_pos_2:
     addi $s3, $s0, 8   
     j keyboard_update
         
-T_pos_3:     
+T_pos_3:   
     lw $s0, 0($sp)      # Store address at 0($sp)
     subi $s0, $s0, 128
     addi $s4, $s0, 128
@@ -910,14 +897,14 @@ L_pos_2_drop:
  
 L_pos_3_drop:
     lw $v0, 0($sp)      # Store address at 0($sp)
-    lw $v1, 4($sp)      # Store address at 0($sp)              
+    lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
 
 
 L_pos_4_drop:   
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 4($sp)      # Store address at 0($sp) 
-    lw $s5, 8($sp)      # Store address at 0($sp)                
+    lw $s5, 12($sp)      # Store address at 0($sp)                
     j base_3_drop              
 
      
@@ -984,10 +971,6 @@ T_shape_drop:
     j T_pos_3_drop
     
 T_pos_1_drop:
-    #li $v0, 11
-    #li $a0, 'a'
-    #syscall
-    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -995,19 +978,13 @@ T_pos_1_drop:
    
                             
 T_pos_2_drop:
-    #li $v0, 11
-    #li $a0, 'b'
-    #syscall
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
 
       
-T_pos_3_drop: 
-    #li $v0, 11
-    #li $a0, 'c'
-    #syscall
-        
+T_pos_3_drop:
+
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -1015,11 +992,7 @@ T_pos_3_drop:
 
     
 T_pos_4_drop:
-    #li $v0, 11
-    #li $a0, 'd'
-    #syscall
-    
-    lw $v0, 0($sp)      # Store address at 0($sp)
+    lw $v0, 8($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
           
