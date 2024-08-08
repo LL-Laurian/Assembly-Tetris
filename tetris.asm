@@ -390,7 +390,7 @@ respond_to_W:
     li $t3, 0xD9A867         # Load the U-shape color code into $t3
     lw $a1, 0($sp)           # Load the first word from stack into $a1
     lw $t4, 0($a1)           # Load the word from address $a1 into $t4
-    beq $t4, $t3, speed      # If $t4 equals U-shape color, jump to speed
+    beq $t4, $t3, Auto_drop      # If $t4 equals U-shape color, jump to speed
 
     li $t3, 0x003D6B         # Load the I-shape color code into $t3
     beq $t4, $t3, I_shape_rot # If $t4 equals I-shape color, jump to I_shape_rot
@@ -647,129 +647,133 @@ L_pos_4:
 
 ##########################################
 
+# J-shape rotation handling
 J_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 128     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_2_3
-    
-    addi $s1, $a1, 136     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_4
-    j J_pos_1
-    
+    li $t9, 0x8A8F9A       # Load wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 128     # Calculate address to check below the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t3, J_pos_2_3 # If the value matches, go to position 2/3
+
+    addi $s1, $a1, 136     # Calculate address to check another position below the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t3, J_pos_4 # If the value matches, go to position 4
+    j J_pos_1              # Otherwise, go to position 1
+
 J_pos_2_3:
-    addi $s1, $a1, 4     # check if right is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, J_pos_3
-    j J_pos_2
-    
+    addi $s1, $a1, 4       # Calculate address to check the right side of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t3, J_pos_3 # If the value matches, go to position 3
+    j J_pos_2              # Otherwise, go to position 2
+
 J_pos_1:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-        
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s0, $s0, 256
-    addi $s4, $s0, 128
-    addi $s2, $s0, 132    
-    addi $s3, $s0, 136    
-    j keyboard_update               
-                              
-J_pos_2:   
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 128
-    addi $s2, $s0, 256    
-    addi $s3, $s0, 4   
-    j keyboard_update
-        
+    addi $s1, $a1, 8       # Calculate address to check the rightmost part of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    subi $s0, $s0, 256     # Update base address for new positions
+    addi $s4, $s0, 128     # Update position for part 4 of the shape
+    addi $s2, $s0, 132     # Update position for part 2 of the shape
+    addi $s3, $s0, 136     # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+J_pos_2:
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    addi $s4, $s0, 128     # Update position for part 4 of the shape
+    addi $s2, $s0, 256     # Update position for part 2 of the shape
+    addi $s3, $s0, 4       # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
 J_pos_3:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-        
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 4
-    addi $s2, $s0, 8    
-    addi $s3, $s0, 136    
-    j keyboard_update 
-    
-J_pos_4:   
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s0, $s0, 256
-    subi $s4, $s0, 252
-    subi $s2, $s0, 124    
-    addi $s3, $s0, 4   
-    j keyboard_update   
-    
+    addi $s1, $a1, 8       # Calculate address to check the rightmost part of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    addi $s4, $s0, 4       # Update position for part 4 of the shape
+    addi $s2, $s0, 8       # Update position for part 2 of the shape
+    addi $s3, $s0, 136     # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+J_pos_4:
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    addi $s0, $s0, 256     # Update base address for new positions
+    subi $s4, $s0, 252     # Update position for part 4 of the shape
+    subi $s2, $s0, 124     # Update position for part 2 of the shape
+    addi $s3, $s0, 4       # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
 ##########################################
 
+# T-shape rotation handling
 T_shape_rot:
-    li $t9, 0x8A8F9A       # wall
-    lw $a1, 0($sp)
-    addi $s1, $a1, 132     # check if right down is still part of tetris
-    lw $t4, 0($s1)
-    bne $t4, $t3, T_pos_3
-    
-    addi $s1, $a1, 4     # check if below is still part of tetris
-    lw $t4, 0($s1)
-    bne $t4, $t3, T_pos_4
-    
-    addi $s1, $a1, 8     # check if right is still part of tetris
-    lw $t4, 0($s1)
-    beq $t4, $t3, T_pos_1
-    j T_pos_2
-    
-T_pos_1:
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s0, $s0, 128
-    subi $s4, $s0, 124
-    addi $s2, $s0, 4    
-    addi $s3, $s0, 132 
-    j keyboard_update               
-                              
-T_pos_2:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall
-       
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s4, $s0, 124
-    addi $s2, $s0, 4    
-    addi $s3, $s0, 8   
-    j keyboard_update
-        
-T_pos_3:   
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    subi $s0, $s0, 128
-    addi $s4, $s0, 128
-    addi $s2, $s0, 256    
-    addi $s3, $s0, 132    
-    j keyboard_update 
-    
-T_pos_4:
-    addi $s1, $a1, 8
-    lw $t4, 0($s1)
-    beq $t4, $t9, Auto_drop    # check right most touches the wall  
-     
-    lw $s0, 0($sp)      # Store address at 0($sp)
-    addi $s4, $s0, 4
-    addi $s2, $s0, 132    
-    addi $s3, $s0, 8   
-    j keyboard_update      
+    li $t9, 0x8A8F9A       # Load wall color code
+    lw $a1, 0($sp)         # Load the current shape's address
+    addi $s1, $a1, 132     # Calculate address to check the right down position of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    bne $t4, $t3, T_pos_3 # If the value does not match, go to position 3
 
-#########################################        
-keyboard_update:  
-    jal delete_shape
-    
-    subi $sp, $sp, 16   # Allocate 16 bytes on the stack
-    sw $s0, 0($sp)      
-    sw $s4, 4($sp)      
-    sw $s2, 8($sp)      
-    sw $s3, 12($sp)     
-    move $a0, $t3
-    jal fill_color
+    addi $s1, $a1, 4       # Calculate address to check the position below the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    bne $t4, $t3, T_pos_4 # If the value does not match, go to position 4
+
+    addi $s1, $a1, 8       # Calculate address to check the right side of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t3, T_pos_1 # If the value matches, go to position 1
+    j T_pos_2              # Otherwise, go to position 2
+
+T_pos_1:
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    addi $s0, $s0, 128     # Update base address for new positions
+    subi $s4, $s0, 124     # Update position for part 4 of the shape
+    addi $s2, $s0, 4       # Update position for part 2 of the shape
+    addi $s3, $s0, 132     # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+T_pos_2:
+    addi $s1, $a1, 8       # Calculate address to check the rightmost part of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    subi $s4, $s0, 124     # Update position for part 4 of the shape
+    addi $s2, $s0, 4       # Update position for part 2 of the shape
+    addi $s3, $s0, 8       # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+T_pos_3:
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    subi $s0, $s0, 128     # Update base address for new positions
+    addi $s4, $s0, 128     # Update position for part 4 of the shape
+    addi $s2, $s0, 256     # Update position for part 2 of the shape
+    addi $s3, $s0, 132     # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+T_pos_4:
+    addi $s1, $a1, 8       # Calculate address to check the rightmost part of the shape
+    lw $t4, 0($s1)         # Load value from the calculated address
+    beq $t4, $t9, Auto_drop # If the value matches the wall, drop the shape
+
+    lw $s0, 0($sp)         # Store the base address at 0($sp)
+    addi $s4, $s0, 4       # Update position for part 4 of the shape
+    addi $s2, $s0, 132     # Update position for part 2 of the shape
+    addi $s3, $s0, 8       # Update position for part 3 of the shape
+    j keyboard_update      # Update the game state
+
+#########################################
+
+# keyboard_update function
+keyboard_update:
+    jal delete_shape      # Call function to delete the current shape
+
+    subi $sp, $sp, 16     # Allocate 16 bytes on the stack
+    sw $s0, 0($sp)        # Save the base address
+    sw $s4, 4($sp)        # Save position for part 4
+    sw $s2, 8($sp)        # Save position for part 2
+    sw $s3, 12($sp)       # Save position for part 3
+    move $a0, $t3         # Move the shape color to $a0
+    jal fill_color        # Call function to fill the new shape color
     
  #############################################   
 Auto_drop:
@@ -801,7 +805,7 @@ Auto_drop:
 ###############################################################################
 #DROP/COLLISION
 
-U_shape_drop:
+U_shape_drop:   
     lw $v0, 4($sp)
     lw $v1, 12($sp)
     j base_2_drop                
@@ -928,6 +932,10 @@ J_pos_2_3_drop:
     j J_pos_2_drop
     
 J_pos_1_drop:
+    li $v0, 11
+    li $a0, 'a'
+    syscall
+    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
@@ -1040,10 +1048,12 @@ base_2_drop:
     lw $t1, 0($v1)
     lw $t2, 0($v0)
     bne $t1, $t5, base_2_further_check1
-    j base_2_update
+    j base_2_further_check2
     
 base_2_further_check1:
     bne $t1, $t7, exit_drop   
+    
+base_2_further_check2:    
     bne $t2, $t5, base_2_further_check3
     j base_2_update
     
