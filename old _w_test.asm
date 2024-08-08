@@ -47,7 +47,8 @@ newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
 max_row: .word 30
-timer_base: .word 0x10000000  # Example base address for sound timer
+change_shape_chance: .word 3
+Mark: .word 0
 ##############################################################################
 # The address of the bitmap display. Don't forget to connect it!
 ADDR_DSPL:
@@ -70,7 +71,13 @@ ADDR_KBRD:
 main:
     lw $t0, ADDR_DSPL      # Load the base address of the display into $t0
     jal init_walls_board   # Call the subroutine to initialize the walls and board
-
+    li $a0, 0xE4DCD1
+    li $a1, 3568
+    jal draw_3
+    
+    li $a0, 0xF5C6C6
+    li $a1, 3460
+    jal draw_0
 start:
     lw $t0, ADDR_DSPL
     
@@ -214,8 +221,22 @@ J_shape:
 
 init_shape_done:
    jal fill_color
-   li $a2, 400
-
+   la $s7, max_row
+   lw $s7, 0($s7)
+   ble $s7, 8, set_100_speed
+   ble $s7, 12, set_150_speed
+   ble $s7, 20, set_200_speed
+   li $a2, 200
+   j speed
+set_100_speed:
+   li $a2, 100
+   j speed  
+set_150_speed:
+   li $a2, 150
+   j speed
+set_200_speed:
+   li $a2, 200
+   j speed       
    #######################################################
    ###############################################################################
 speed:
@@ -237,8 +258,10 @@ keyboard_input:                     # A key is pressed
     beq $a0, 0x61, respond_to_A     # Check if the key a was pressed
     beq $a0, 0x64, respond_to_D
     beq $a0, 0x73, respond_to_S
+    beq $a0, 0x70, respond_to_P
+    beq $a0, 0x63, respond_to_C
 
-    b keyboard
+    b Auto_drop
 
 respond_to_A:
     li $t9, 0x8A8F9A       # wall
@@ -386,10 +409,74 @@ respond_to_W:
 
 respond_to_S:
     addi $a2, $a2, -100
-    bge $a2, 100, Auto_drop
+    bge $a2, 50, Auto_drop
     addi $a2, $a2, 100
     j Auto_drop
+
+respond_to_P:
+    li $a1, 3512
+    li $a0, 0x00000
+    jal draw_p
+    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
+    lw $t8, 0($t0)                  # Load first word from keyboard
+    beq $t8, 1, check_P
+    j respond_to_P
+check_P:
+    lw $a0, 4($t0)
+    beq $a0, 0x70, resume
+    beq $a0, 0x71, Terminate          
+    j respond_to_P
+resume:
+    li $a1, 3512
+    li $a0, 0x8A8F9A
+    jal draw_p
+    j Auto_drop
     
+respond_to_C:
+    la $s7, change_shape_chance
+    lw $t1, 0($s7)
+    
+    beq $t1, 0, Auto_drop
+    jal delete_shape
+    addi $sp, $sp, 16
+    beq $t1, 1, change_to_0
+    beq $t1, 2, change_to_1
+    li $a1, 3568
+    li $a0, 0x8A8F9A
+    jal draw_3
+    li $a0, 0xE4DCD1 
+    jal draw_2
+    
+    li $v0, 11
+    li $a0, 'a'
+    syscall
+    
+    j update_drop_chance
+
+change_to_0:
+    li $a1, 3568
+    li $a0, 0x8A8F9A
+    jal draw_1
+    li $a0, 0xE4DCD1 
+    jal draw_0
+    j update_drop_chance
+     
+change_to_1:
+    li $a1, 3568
+    li $a0, 0x8A8F9A
+    jal draw_2
+    li $a0, 0xE4DCD1 
+    jal draw_1
+    
+update_drop_chance:
+    li $a1, 3568
+    la $s7, change_shape_chance
+    lw $t1, 0($s7)
+    subi $t1, $t1, 1
+    sw $t1, 0($s7)
+    j start
+                
+              
 Terminate:
     li $v0, 10             # Terminate the program gracefully
     syscall    
@@ -850,13 +937,13 @@ T_shape_drop:
     li $t9, 0x8A8F9A       # wall
     lw $a1, 0($sp)
     
-    addi $s1, $a1, 128     # check if right is still part of tetris
-    lw $t4, 4($sp)
-    bne $t4, $s1, T_pos_4_drop
+    addi $s1, $a1, 256     # check if right is still part of tetris
+    lw $t4, 8($sp)
+    beq $t4, $s1, T_pos_4_drop
     
     addi $s1, $a1, 4     # check if right down is still part of tetris
     lw $t4, 4($sp)
-    bne $t4, $s1, T_pos_1_drop
+    beq $t4, $s1, T_pos_1_drop
     
     addi $s1, $a1, 132     # check if right is still part of tetris
     lw $t4, 12($sp)
@@ -864,6 +951,10 @@ T_shape_drop:
     j T_pos_3_drop
     
 T_pos_1_drop:
+    #li $v0, 11
+    #li $a0, 'a'
+    #syscall
+    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -871,12 +962,19 @@ T_pos_1_drop:
    
                             
 T_pos_2_drop:
+    #li $v0, 11
+    #li $a0, 'b'
+    #syscall
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
 
       
-T_pos_3_drop:     
+T_pos_3_drop: 
+    #li $v0, 11
+    #li $a0, 'c'
+    #syscall
+        
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 8($sp)      # Store address at 0($sp) 
     lw $s5, 12($sp)      # Store address at 0($sp)                
@@ -884,6 +982,10 @@ T_pos_3_drop:
 
     
 T_pos_4_drop:
+    #li $v0, 11
+    #li $a0, 'd'
+    #syscall
+    
     lw $v0, 0($sp)      # Store address at 0($sp)
     lw $v1, 12($sp)      # Store address at 0($sp)              
     j base_2_drop              
@@ -1126,9 +1228,67 @@ check_row_loop:
     la $a0, newline
     syscall
                                                    
-    beq $a1, -1, Terminate_program
+    beq $a1, -1, cross
     beq $a1, 0, check_row_loop
     jal Delete_row
+    
+    la $s7, Mark
+    lw $t1, 0($s7)
+    #li $v0, 1
+    #syscall
+cross:
+    li $a1, 1584
+    li $a0, 0xFF0000
+    jal draw_x
+    j Terminate_program    
+check_mark:
+    beq $t1, 0, mark_to_1
+    beq $t1, 1, mark_to_2
+    beq $t1, 2, mark_to_3
+    beq $t1, 3, mark_to_4
+    j delete_update
+
+mark_to_1:
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_0
+    li $a0, 0xF5C6C6 
+    jal draw_1
+    j delete_update
+     
+mark_to_2:
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_1
+    li $a0, 0xF5C6C6 
+    jal draw_2
+    j delete_update
+
+mark_to_3:    
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_2
+    li $a0, 0xF5C6C6 
+    jal draw_3
+    j delete_update
+     
+mark_to_4:    
+    li $a1, 3460
+    li $a0, 0x8A8F9A
+    jal draw_3
+    li $a0, 0xF5C6C6 
+    jal draw_4
+    li $a1, 1592
+    li $a0, 0xFF0000
+    jal draw_w
+    j Terminate_program       
+    
+delete_update:
+    la $s7, Mark
+    lw $a0, 0($s7)
+    addi $a0, $a0, 1
+    sw $a0, 0($s7)
+              
     la $s7, row_to_delete
     la $s5, max_row
     lw $s4, 0($s5)
@@ -1143,11 +1303,33 @@ check_row_loop:
 Terminate_program:
     la $s7, row_to_delete
     la $s5, max_row
-    addi $s7, $s7, 4
-    addi $s5, $s5, 4
+    li $t1, 0
+    sw $t1, 0($s7)
+    li $t1, 30
+    sw $t1, 0($s5)
+    la $s7, change_shape_chance
+    la $s5, Mark
+    li $t1, 0
+    sw $t1, 0($s5)
+    li $t1, 3
+    sw $t1, 0($s7)
     mul $t4, $t4, 4
     add $sp, $sp, $t4
-    j Terminate         
+    
+check_reset:    
+    lw $t0, ADDR_KBRD               # $t0 = base address for keyboard
+    lw $t8, 0($t0)                  # Load first word from keyboard
+    beq $t8, 1, check_r
+    j check_reset
+check_r:
+    lw $a0, 4($t0)
+    beq $a0, 0x72, reset
+    beq $a0, 0x71, Terminate          
+    j check_reset
+reset:
+    j main
+    
+    #j Terminate         
     
     #li $v0, 10             # Terminate the program gracefully
     #syscall
@@ -1597,7 +1779,223 @@ random_shape:
     
    move $t1, $a0 #random shape of Tetrominoes
    jr $ra
-##################################################################################             
+##################################################################################
+draw_x:
+    lw $t0, ADDR_DSPL  # Load the base address of the display
+    add $t6, $t0, $a1  # Calculate the starting address based on input offset ($a1)
+    move $t1, $a0      # Color value in $a0
+
+    # First diagonal (\)
+    sw $t1, 0($t6)         # (0, 0)
+    addi $t7, $t6, 132     # (1, 1)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (2, 2)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (3, 3)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (4, 4)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (5, 5)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (6, 6)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 132     # (7, 7)
+    sw $t1, 0($t7)
+
+    # Second diagonal (/)
+    lw $t0, ADDR_DSPL  # Load the base address of the display
+    add $t6, $t0, $a1
+    addi $t6, $t6, 28      # (7, 0)
+    sw $t1, 0($t6)
+    addi $t7, $t6, 124     # (6, 1)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (5, 2)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (4, 3)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (3, 4)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (2, 5)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (1, 6)
+    sw $t1, 0($t7)
+    addi $t7, $t7, 124     # (0, 7)
+    sw $t1, 0($t7)
+
+    jr $ra                # Return from the function
+
+##################################################################################    
+draw_p:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+
+    jr $ra
+##################################################################################
+draw_w:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    addi $t7, $t6, 392
+    sw $t1, 0($t7)
+    addi $t7, $t6, 396
+    sw $t1, 0($t7)
+    addi $t7, $t6, 264
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 16
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+
+    jr $ra
+################################################################################## 
+draw_4:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################    
+draw_3:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 132
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 388
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################  
+draw_2:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 132
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 260
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+################################################################################## 
+draw_1:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################
+draw_0:
+    lw $t0, ADDR_DSPL
+    add $t6, $t0, $a1
+    move $t1, $a0
+    sw $t1, 0($t6)
+    addi $t7, $t6, 4
+    sw $t1, 0($t7)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    addi $t7, $t6, 516
+    sw $t1, 0($t7)
+    addi $t6, $t6, 8
+    sw $t1, 0($t6)
+    addi $t7, $t6, 128
+    sw $t1, 0($t7)
+    addi $t7, $t6, 256
+    sw $t1, 0($t7)
+    addi $t7, $t6, 384
+    sw $t1, 0($t7)
+    addi $t7, $t6, 512
+    sw $t1, 0($t7)
+    jr $ra
+##################################################################################
+            
 init_walls_board:
     li $t2, 0              # t2 = y (row index)
     li $t3, 0              # t3 = x (column index)
@@ -1611,7 +2009,7 @@ Loop:
     # Determine if we are in a wall area
     ble  $t3, 2, wall       # If x is 0 (first column), draw wall
     bge $t3, 29, wall         # If x == 255 (last column), draw wall
-    bge $t2, 29, wall         # If y == 255 (last row), draw wall
+    bge $t2, 26, wall         # If y == 255 (last row), draw wall
 
     # Determine background color
     andi $t7, $t2, 1          # $t7 = y % 2 (check if y is odd)
@@ -1645,5 +2043,7 @@ first_column:
     j Loop
 
 end_loop:
+    # initially 3 chances to change
+    
     jr $ra    
    

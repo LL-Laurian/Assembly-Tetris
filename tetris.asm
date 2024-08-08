@@ -12,28 +12,49 @@
 #
 # Which milestones have been reached in this submission?
 # (See the assignment handout for descriptions of the milestones)
-# - Milestone 1/2/3/4/5 (choose the one the applies)
+# - Milestone 1/2/3/4/5 (choose the one the applies): 5
 #
 # Which approved features have been implemented?
 # (See the assignment handout for the list of features)
 # Easy Features:
-# 1. (fill in the feature, if any)
-# 2. (fill in the feature, if any)
-# ... (add more if necessary)
+# 1. Gravity and auto drop
+# 2. Speed increase once the row is less than 8, 12 and 30. Speed increase gradually.
+# 3. Implemented pause: First time press "p", there is a "P" for "Pause" in the bottom middle of the screen. For the second time, 
+# P disappear and the game resumes.
+# 4. There are 3 chances to change shapes during the game. The remaining number of chances is the white number in the bottom right.
+# To change shape, Press 'c'.
+# 5. If the height of the tetris is less than or equal row 5, the game is over, and there is a big red cross in the middle of the screen.
+# To retry, press 'r'.
+# 6. If you completed 4 lines, you gain 4 points (bottom left) and you win. There is a big red "W" in the middle of the screen. To retry, 
+# press 'r'.
+# 7. Implemented 7 shapes with 7 different colors.
+
 # Hard Features:
-# 1. (fill in the feature, if any)
-# 2. (fill in the feature, if any)
-# ... (add more if necessary)
+# 1. Store marks. Completing one row, you gain 1 mark. You win once you get 4 points.
+# 2. Implemented 7 shapes with 7 different colors. They can all do rotations. In total, implemented 19 shapes (included rotated shape)
+
+#####################################################################
 # How to play:
 # (Include any instructions)
+# 1. Once the game has started, a random shape will be dropped from the top of the screen.
+# 2. You can use 'w' for rotation, 'a' for left movement, 'd' for right movement, 's' for acceleration, 'q' for quitting the game, 'p' for
+# pausing. Note that if the speed less than or equal to 50, 's' will not be affective.
+# 3. Once you have filled a full row of tetris, that row is removed and you gain one point.
+# 4. If the height of the tetris is less than or equal row 5, the game is over, and there is a big red cross in the middle of the screen.
+# To retry, press 'r'.
+# 5. If you completed 4 lines, you gain 4 points (bottom left) and you win. There is a big red "W" in the middle of the screen. To retry, 
+# press 'r'.
+
 # Link to video demonstration for final submission:
 # - (insert YouTube / MyMedia / other URL here). Make sure we can view it!
 #
 # Are you OK with us sharing the video with people outside course staff?
-# - yes / no
+# - yes
 #
 # Any additional information that the TA needs to know:
-# - (write here, if any)
+# - I completed this project on my own since my partner uses different algorithm. I implemented 7 shapes with 7 different colors. They can 
+# all do rotations. In total, implemented 19 shapes (included rotated shape). This is extremely difficult since there are too many variation
+# and too many factors to consider when doing rotation an collision detection. I did a lot of debugging and fixing during my implementation.
 #
 #####################################################################
 
@@ -41,9 +62,6 @@
 
     .data
 ##############################################################################
-string: .asciiz "right loop is ran\n"
-counter: .asciiz "current counter is "
-newline: .asciiz "\n"
 numbers: .word 0, 0, 0, 0    # Create an array with 4 numbers
 row_to_delete: .word 0    # Create an array with 4 numbers
 max_row: .word 30
@@ -223,19 +241,19 @@ init_shape_done:
    jal fill_color
    la $s7, max_row
    lw $s7, 0($s7)
-   ble $s7, 8, set_100_speed
-   ble $s7, 12, set_150_speed
-   ble $s7, 20, set_200_speed
+   ble $s7, 8, set_50_speed
+   ble $s7, 12, set_100_speed
+   ble $s7, 20, set_150_speed
    li $a2, 200
    j speed
+set_50_speed:
+   li $a2, 50
+   j speed  
 set_100_speed:
    li $a2, 100
-   j speed  
+   j speed
 set_150_speed:
    li $a2, 150
-   j speed
-set_200_speed:
-   li $a2, 200
    j speed       
    #######################################################
    ###############################################################################
@@ -408,9 +426,9 @@ respond_to_W:
     j T_shape_rot
 
 respond_to_S:
-    addi $a2, $a2, -100
+    addi $a2, $a2, -50
     bge $a2, 50, Auto_drop
-    addi $a2, $a2, 100
+    addi $a2, $a2, 50
     j Auto_drop
 
 respond_to_P:
@@ -478,6 +496,21 @@ update_drop_chance:
                 
               
 Terminate:
+    la $s0, numbers
+    addi $s0, $s0, 16
+    
+    la $s0, row_to_delete
+    addi $s0, $s0, 4
+    
+    la $s0, max_row
+    addi $s0, $s0, 4
+    
+    la $s0, change_shape_chance
+    addi $s0, $s0, 4
+    
+    la $s0, Mark
+    addi $s0, $s0, 4
+    
     li $v0, 10             # Terminate the program gracefully
     syscall    
 
@@ -1197,8 +1230,6 @@ exit_drop:
     addi $sp, $sp, 16
     jal sorted_rows
     jal remove_duplicate
-    la $s0, numbers
-    addi $s0, $s0, 16
     la $s7, row_to_delete
     li $s3, 0
     
@@ -1206,27 +1237,13 @@ check_row_loop:
     beq $t4, 0, start   
     lw $a1, 0($sp)
     add $a1, $a1, $s3
-    li $v0, 1
-    move $a0, $a1
-    syscall
-    
-    
-    li $v0, 4
-    la $a0, newline
-    syscall
     
     jal Row_check
     addi $sp, $sp, 4
     subi $t4, $t4, 1
     la $s7, row_to_delete
     lw $a1, 0($s7)
-    
-    li $v0, 1
-    move $a0, $a1
-    syscall
-    li $v0, 4
-    la $a0, newline
-    syscall
+
                                                    
     beq $a1, -1, cross
     beq $a1, 0, check_row_loop
@@ -1234,8 +1251,7 @@ check_row_loop:
     
     la $s7, Mark
     lw $t1, 0($s7)
-    #li $v0, 1
-    #syscall
+
 cross:
     li $a1, 1584
     li $a0, 0xFF0000
@@ -1328,11 +1344,7 @@ check_r:
     j check_reset
 reset:
     j main
-    
-    #j Terminate         
-    
-    #li $v0, 10             # Terminate the program gracefully
-    #syscall
+
     
 ##############################################################
 #FUNCTION START HERE
@@ -1345,17 +1357,6 @@ Delete_row:
     lw $s5, 0($s5)
     la $s7, row_to_delete
     lw $s7, 0($s7)
-    
-    #li $v0, 1
-    #move $a0, $s5
-    #syscall
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    #li $v0, 1
-    #move $a0, $s7
-    #syscall
     
     mul $t6, $s7, 128
     addi $t6, $t6, 12
@@ -1426,40 +1427,17 @@ check_rows_inner_loop_update:
     j check_rows_inner_loop
     
 Not_full:
-    #lw $a1, 0($s7)
-    #li $v0, 1
-    #move $a0, $a1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    
     jr $ra
     
 Full:
     la $s7, row_to_delete
     sw $a1, 0($s7)
     
-    #li $v0, 1
-    #move $a0, $a1
-    #syscall
-    
     jr $ra
     
 End_game:
     li $t6, -1
     sw $t6, 0($s7)
-    
-    #lw $a1, 0($s7)
-    #li $v0, 1
-    #move $a0, $a1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
     
     jr $ra           
 ######################################### 
@@ -1515,13 +1493,6 @@ final:
 update_max_row:
     sw $a0, 0($a1)
     
-    #li $v0, 1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
 update_final: 
     lw $a0, 0($s7)           
     lw $a1, 12($s7)
@@ -1532,42 +1503,6 @@ update_final:
     lw $a1, 8($s7)
     sw $a0, 8($s7)
     sw $a1, 4($s7)
-    
-    #lw $a0, 0($s7)
-    
-    #li $v0, 1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    #lw $a0, 4($s7)
-    
-    #li $v0, 1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    #lw $a0, 8($s7)
-    
-    #li $v0, 1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    #lw $a0, 12($s7)
-    
-    #li $v0, 1
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall  
       
     jr $ra                     # Make the syscall to exit the program
 
@@ -1587,14 +1522,6 @@ check_loop:
     subi $sp, $sp, 4
     sw $v1, 0($sp)
     
-    #li $v0, 1
-    #move $a0, $v1
-    #syscall
-   
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
     addi $t4, $t4, 1
     
 update:
@@ -1613,17 +1540,6 @@ exit_duplicate_loop:
     sw $s6, 0($sp)
     addi $t4, $t4, 1
     
-    #li $v0, 1
-    #move $a0, $s6
-    #syscall
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
-    
-    #mul $t4, $t4, 4
-    #add $sp, $sp, $t4
-    
     jr $ra                                                                     
 ##############################################################################
 ##############################################################################
@@ -1634,68 +1550,42 @@ calculate_row:
      
     lw $a0, 0($sp)
     sub $a0, $a0, $t0    #calculate address
-    
-    #li $v0, 1
-    #syscall
+
     
     div $a0, $t1
     mflo $a0
     
-    #li $v0, 1
-    #syscall
     
     sw $a0, 0($s0)
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+
     
     lw $a0, 4($sp)
     sub $a0, $a0, $t0    #calculate address
-    #li $v0, 1
-    #syscall
+
     
     div $a0, $t1
     mflo $a0
-    
-    #li $v0, 1
-    #syscall
+
     sw $a0, 4($s0)
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+
     
     lw $a0, 8($sp)
     sub $a0, $a0, $t0    #calculate address
-    #li $v0, 1
-    #syscall
+
     div $a0, $t1
     mflo $a0
-    
-    #li $v0, 1
-    #syscall
+
     sw $a0, 8($s0)
-    #li $v0, 4
-    #la $a0, newline
-    #syscall
+
     
     lw $a0, 12($sp)
     sub $a0, $a0, $t0    #calculate address
-    #li $v0, 1
-    #syscall
+
     div $a0, $t1
     mflo $a0
-    
-    #li $v0, 1
-    #syscall
+
     sw $a0, 12($s0)
-    
-    #li $v0, 4
-    #la $a0, newline
-    #syscall    
-    
-    
+
     jr $ra
 ##############################################################
 delete_shape:
